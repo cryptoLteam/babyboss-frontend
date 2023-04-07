@@ -86,8 +86,8 @@ const Header = () => {
       <div className='category'>
         <Link to="/" className='font3'>HOME</Link>
         <Link to="/stake" className='font3'>STAKE</Link>		
-				<Link to="/signup" className='font3'>SHOP</Link>		
-				<WalletConnectButton />
+		<Link to="/market" className='font3'>SHOP</Link>		
+		<WalletConnectButton />
       </div>
     </div>
   )

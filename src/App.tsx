@@ -24,6 +24,7 @@ import Header from 'layouts/Header';
 import Footer from 'layouts/Footer';
 import Main from 'views/main';
 import Stake from 'views/stake';
+import Market from 'views/market';
 import ScrollUpButton from 'components/scrollUpButton';
 
 import BarLoader from "react-spinners/BarLoader";
@@ -75,6 +76,7 @@ const App = () => {
               <Route path="/" element={<Main setLoader={setLoader}/>} /> 
               {/* protected routes */}
               <Route path="/stake" element={isLogin? <Stake /> : <Navigate to='/' />} />
+              <Route path="/market" element={isLogin? <Market /> : <Navigate to='/' />} />
               {/* <Route path="/referral-Program" element={<ReferralProgramme /> } />
               <Route path="/notifications" element={<ReferralProgramme /> } />
               <Route path="/swap" element={<ReferralProgramme /> } />
