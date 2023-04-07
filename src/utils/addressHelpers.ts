@@ -10,6 +10,9 @@ export const getAddress = (address: Address): string => {
 export const getNFTAddress = () => {
   return getAddress(addresses.nft)
 }
+export const getMechaAddress = () => {
+  return getAddress(addresses.mecha)
+}
 export const getStakingAddress = () => {
   return getAddress(addresses.staking)
 }

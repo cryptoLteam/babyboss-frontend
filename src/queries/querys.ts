@@ -13,8 +13,8 @@ export interface GetNftsData {
 }  
  
 export const GET_NFTS = gql`
-	query GetNfts {
-		nfts(first: 10) {
+	query GetNfts($owner: Bytes!) {
+		nfts(where: {owner: $owner}) {
 			id
 			tokenId
 			owner

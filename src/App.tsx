@@ -44,13 +44,13 @@ const override: CSSProperties = {
 
 const App = () => {
   // useNFTUserData(web3Context?.account)
-  const web3Context = useWeb3Context()
-  const [cookies, setCookie] = useCookies(['token', 'public_key'])
+  // const web3Context = useWeb3Context()
+  // const [cookies, setCookie] = useCookies(['token', 'public_key'])
   
-  useMarketplaceData()
-  useStakingData()
-  useOwnerData()  
-  useIsRegistered(web3Context?.account)
+  // useMarketplaceData()
+  // useStakingData()
+  // useOwnerData()  
+  // useIsRegistered(web3Context?.account)
 
   // const isLogin = useIsLogin(web3Context?.account, cookies?.token)
   // console.log("sniper: isLogin: ", isLogin)
