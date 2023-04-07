@@ -28,13 +28,13 @@ function TabWidget({ nftlists }: Props) {
   const [isApprovedForAllMecha, setIsApprovedForAllMecha] = useState<boolean>(false)
   useEffect(() => {
     const fetchIsApprovedForAll = async (account: string) => {
-      const contract = getNFTContract(web3Context?.provider)
-      const result = await contract.methods.isApprovedForAll(account, getStakingAddress()).call()
+      const contract = getNFTContract(0, web3Context?.provider)
+      const result = await contract.methods.isApprovedForAll(account, getStakingAddress(0)).call()
       setIsApprovedForAll(result)
     }
     const fetchIsApprovedForAllMecha = async (account: string) => {
-      const contract = getMechaContract(web3Context?.provider)
-      const result = await contract.methods.isApprovedForAll(account, getStakingAddress()).call()
+      const contract = getMechaContract(0, web3Context?.provider)
+      const result = await contract.methods.isApprovedForAll(account, getStakingAddress(0)).call()
       setIsApprovedForAllMecha(result)
     }
     if(web3Context?.account) {
@@ -92,13 +92,13 @@ function TabWidget({ nftlists }: Props) {
       toast.error("Confirm your wallet connection.")
       return
     }
-    const nftAddress = getNFTAddress()
-    const stakingAddress = getStakingAddress()
+    const nftAddress = getNFTAddress(0)
+    const stakingAddress = getStakingAddress(0)
     if(isApprovedForAll === false) {
-      const nftContract = getNFTContract(web3Context.provider)
+      const nftContract = getNFTContract(0, web3Context.provider)
       await nftContract.methods.setApprovalForAll(stakingAddress, true).send({from: web3Context.account})
     }
-    const contract = getStakingContract(web3Context?.provider)
+    const contract = getStakingContract(0, web3Context?.provider)
     await contract.methods.stake(nftAddress, ids).send({from: web3Context?.account})
     toast.error("Staked Successfully!")
 
@@ -111,13 +111,13 @@ function TabWidget({ nftlists }: Props) {
       toast.error("Confirm your wallet connection.")
       return
     }
-    const nftAddress = getNFTAddress()
-    const stakingAddress = getStakingAddress()
+    const nftAddress = getNFTAddress(0)
+    const stakingAddress = getStakingAddress(0)
     if(isApprovedForAllMecha === false) {
-      const mechaContract = getMechaContract(web3Context.provider)
+      const mechaContract = getMechaContract(0, web3Context.provider)
       await mechaContract.methods.setApprovalForAll(stakingAddress, true).send({from: web3Context.account})
     }
-    const contract = getStakingContract(web3Context?.provider)
+    const contract = getStakingContract(0, web3Context?.provider)
     await contract.methods.unStake(nftAddress, ids).send({from: web3Context?.account})
     toast.error("Staked Successfully!")
 

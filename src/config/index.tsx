@@ -7,7 +7,7 @@ export const INFURA_ID = 'PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-'
 // export const RPC_URL = 'https://eth-rinkeby.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-' // rinkeby
 export const RPC_URL = 'https://eth-goerli.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-' // goerli
 // export const RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545/' //BSC Testnet
-export const CHAIN = 5 // 4 // 97 //56
+export const CHAIN = [5, 80001] // 4 // 97 //56
 
 export const NFT_IPFS = 'https://newgate.mypinata.cloud/ipfs/Qma3pitoFVPR8AvP2UepPjvn6wLwG6q4KioV1ULQ5sHRcA/'
 

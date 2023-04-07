@@ -2,7 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { CookiesProvider } from "react-cookie";
-import { store } from 'state';
 import { Web3ContextProvider } from 'contexts/Web3Context'
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -13,13 +12,11 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
       <Web3ContextProvider>
         <CookiesProvider>
           <App />
         </CookiesProvider>
       </Web3ContextProvider>
-    </Provider>
   </React.StrictMode>
 );
 

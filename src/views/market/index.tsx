@@ -1,18 +1,4 @@
-import Sidebar from 'components/Sidebar'
-import Topbar from 'components/Topbar'
-import { FaFacebookF } from "react-icons/fa"
-import { BsTwitter, BsThreeDots } from "react-icons/bs"
-import { AiFillCheckCircle } from "react-icons/ai"
-import MarketCard from 'components/marketplace/MarketCard'
-import { NFTData } from 'state/marketplace'
-import { useSelector } from 'react-redux'
-import { useEffect, useState } from 'react'
-import { AUTHOR } from 'config/nfts'
-import getDisplayStringFromNumber from 'utils/getDisplayStringFromNumber'
 import { useWeb3Context } from 'hooks/useWeb3Context'
-
-const SCROLL_COUNT = 20
-const SCROLL_BOTTOM_COUNT = 130
 
 const Market = () => {
   const web3Context = useWeb3Context()

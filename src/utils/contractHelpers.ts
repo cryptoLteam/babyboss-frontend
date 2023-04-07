@@ -34,38 +34,38 @@ export function getContractWithWeb3(abi: any, address: string, provider: any) {
   return new web3.eth.Contract(abi, address)
 }
 
-export const getNFTContract = (provider: any) => {
-  return getContractWithWeb3(nft, getNFTAddress(), provider)
+export const getNFTContract = (id: number, provider: any) => {
+  return getContractWithWeb3(nft, getNFTAddress(id), provider)
 }
 
-export const getMechaContract = (provider: any) => {
-  return getContractWithWeb3(nft, getMechaAddress(), provider)
+export const getMechaContract = (id: number, provider: any) => {
+  return getContractWithWeb3(nft, getMechaAddress(id), provider)
 }
 
-export const getRewardContract = (provider: any) => {
-  return getContractWithWeb3(reward, getRewardAddress(), provider)
+export const getRewardContract = (id: number, provider: any) => {
+  return getContractWithWeb3(reward, getRewardAddress(id), provider)
 }
 
-export const getStakingContract = (provider: any) => {
-  return getContractWithWeb3(NFTStaking, getStakingAddress(), provider)
+export const getStakingContract = (id: number, provider: any) => {
+  return getContractWithWeb3(NFTStaking, getStakingAddress(id), provider)
 }
 
-export const getMulticallContract1 = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getContract(MultiCallAbi, getMulticallAddress1(), signer) as any
+export const getMulticallContract1 = (id: number, signer?: ethers.Signer | ethers.providers.Provider) => {
+  return getContract(MultiCallAbi, getMulticallAddress1(id), signer) as any
 }
 
-export const getMulticallContract2 = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getContract(MultiCallAbi, getMulticallAddress2(), signer) as any
+export const getMulticallContract2 = (id: number, signer?: ethers.Signer | ethers.providers.Provider) => {
+  return getContract(MultiCallAbi, getMulticallAddress2(id), signer) as any
 }
 
-export const getMulticallContract3 = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getContract(MultiCallAbi, getMulticallAddress3(), signer) as any
+export const getMulticallContract3 = (id: number, signer?: ethers.Signer | ethers.providers.Provider) => {
+  return getContract(MultiCallAbi, getMulticallAddress3(id), signer) as any
 }
 
-export const getRegisterContract = (provider: any) => {
-  return getContractWithWeb3(RegisterAbi, getRegisterAddress(), provider)
+export const getRegisterContract = (id: number, provider: any) => {
+  return getContractWithWeb3(RegisterAbi, getRegisterAddress(id), provider)
 }
 
-export const getRouterContract = (provider: any) => {
-  return getContractWithWeb3(RouterABI, getRouterAddress(), provider)
+export const getRouterContract = (id: number, provider: any) => {
+  return getContractWithWeb3(RouterABI, getRouterAddress(id), provider)
 }

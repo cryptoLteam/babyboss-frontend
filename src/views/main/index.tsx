@@ -3,14 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCookies } from 'react-cookie';
 import tw from 'tw-tailwind'
 import { useWeb3Context } from 'hooks/useWeb3Context'
-import { useIsRegistered, useRegisterState } from 'state/register/hooks'
-import GlobModal from 'components/GlobModal'
-import { VscChromeClose } from "react-icons/vsc"
-import { AiFillCheckCircle } from "react-icons/ai"
 import { useSelector } from 'react-redux'
-import { URI } from 'api-control/api'
-import axios from 'axios'
-import encryptParams from 'utils/encryption';
 import backgroundLayer1 from '../../assets/img/background-layer-1.png';
 import backgroundLayer2 from '../../assets/img/background-layer-2.png';
 import backgroundLayer3 from '../../assets/img/background-layer-3.png';
@@ -26,60 +19,6 @@ const OpenseaBtn = tw.a`
 `;
 
 const Main = (setLoader: any) => {
-	const navigation = useNavigate()
-	const web3Context = useWeb3Context()
-
-	const [cookies, setCookie] = useCookies(['token', 'public_key']);
-
-	const [wallet, setWallet] = useState<string | undefined>("")
-
-	const [modalOpen1, setModalOpen1] = useState<any>(false)
-	const [modalOpen2, setModalOpen2] = useState<any>(false)
-	const [errorModal, setErrorModal] = useState(false)
-	const [message, setMessage] = useState<String>("")
-
-	useIsRegistered(web3Context?.account)
-	const registerState = useRegisterState()
-	const loading = useSelector((state: any) => state.register.status)
-
-
-
-	useEffect(() => {
-		setWallet(web3Context?.account.toLowerCase())
-	}, [web3Context])
-
-	const login = () => {
-		// setModalOpen1(true)
-		if(registerState) {
-				// const body = {
-				//     public_key: web3Context?.account,
-				//     token: cookies.token
-				// }
-				// axios.post(`${URI}/auth/login`, {params: encryptParams(body)})
-				//     .then((res) => {
-								// console.log("sniper: res: ", res)
-								// setCookie('token', res.data.token)
-								// setCookie('public_key', res.data.public_key)
-
-								setModalOpen2(true)
-				
-								setTimeout(() => {
-										navigation("/referral-program")
-										// window.location.reload()
-								}, 2000);
-						// })
-						// .catch((err) => {
-						//     console.log("sniper: err: ", err)
-						//     setMessage(err.response.data.message)
-						//     setErrorModal(true)
-						// })
-						// .finally(() => setModalOpen1(false))
-		} else { 
-				setMessage("User With Public Key Not Found")
-				setErrorModal(true)
-		}
-	}
-
 	return (
 		<div className=' w-full'>
 			<div className='w-full'>

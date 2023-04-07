@@ -1,20 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useCookies } from 'react-cookie';
 import { useWeb3Context } from 'hooks/useWeb3Context'
-import { useIsRegistered, useRegisterState } from 'state/register/hooks'
-import GlobModal from 'components/GlobModal'
-import { VscChromeClose } from "react-icons/vsc"
-import { AiFillCheckCircle } from "react-icons/ai"
-import { useSelector } from 'react-redux'
-import { URI } from 'api-control/api'
-import axios from 'axios'
-import encryptParams from 'utils/encryption';
-
-
 import TabWidget from 'components/tabWidget';
 import backgroundStake1 from '../../assets/img/stake/layer.png';
-import { useNFTData, useNFTStakeData } from 'state/stakelists/hooks'
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL } from 'config/nfts';
 import { GET_NFTS, GetNftsData, Nft } from 'queries/querys';
@@ -52,8 +39,8 @@ const Stake = () => {
 	const [reload, setReload] = useState(false)
 	useEffect(() => {
 		const fetchPendingReward =async (account:string) => {
-			const nftAddress = getNFTAddress()
-			const contract = getStakingContract(web3Context?.provider)
+			const nftAddress = getNFTAddress(0)
+			const contract = getStakingContract(0, web3Context?.provider)
 			const _pending = await contract.methods.pendingReward(nftAddress, account).call()
 			setPendingReward(Number(ethers.utils.formatEther(_pending)))
 			console.log()
@@ -68,8 +55,8 @@ const Stake = () => {
 			toast.error("Confirm your wallet connection!")
 			return
 		}
-		const contract = getStakingContract(web3Context.provider) 
-		await contract.methods.claimRewards(getNFTAddress()).send({from: web3Context.account})
+		const contract = getStakingContract(0, web3Context.provider) 
+		await contract.methods.claimRewards(getNFTAddress(0)).send({from: web3Context.account})
 		toast.success("Claimed Successfully. Confirm on Polygon")
 		setReload(!reload)
 	}

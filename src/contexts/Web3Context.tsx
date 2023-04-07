@@ -44,7 +44,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
 
   // const [web3Modal, setWeb3Modal] = useState()
   const web3Modal = new Web3Modal({
-    network: getChainData(CHAIN).network,
+    network: getChainData(CHAIN[0]).network,
     cacheProvider: true, // optional
     providerOptions: providerOptions
   })
