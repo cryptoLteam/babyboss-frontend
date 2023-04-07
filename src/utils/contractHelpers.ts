@@ -12,6 +12,7 @@ import {
   getMulticallAddress3,
   getRegisterAddress,
   getRouterAddress,
+  getMechaAddress,
 } from 'utils/addressHelpers'
 
 // ABI
@@ -35,6 +36,10 @@ export function getContractWithWeb3(abi: any, address: string, provider: any) {
 
 export const getNFTContract = (provider: any) => {
   return getContractWithWeb3(nft, getNFTAddress(), provider)
+}
+
+export const getMechaContract = (provider: any) => {
+  return getContractWithWeb3(nft, getMechaAddress(), provider)
 }
 
 export const getRewardContract = (provider: any) => {
