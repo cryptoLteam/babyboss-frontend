@@ -2,9 +2,9 @@ import { useWeb3Context } from 'hooks/useWeb3Context'
 import { useEffect } from 'react';
 
 const Market = ({selectedChain}: {selectedChain: any}) => {
-  // useEffect(() => {
-  //   selectedChain.setValue(1)
-  // })
+  useEffect(() => {
+    selectedChain(1)
+  })
 
   return (
     <div>
