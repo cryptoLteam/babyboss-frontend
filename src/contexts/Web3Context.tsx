@@ -20,8 +20,8 @@ export type Web3ContextData = {
 
 export const Web3Context = React.createContext<Web3ContextData>(null);
 
-export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ children }) => {
-  const [provider, setProvider] = useState<JsonRpcProvider>(new StaticJsonRpcProvider(RPC_URL));
+export const Web3ContextProvider: React.FC<{ children: ReactElement, id: number }> = ({ children, id }) => {
+  const [provider, setProvider] = useState<JsonRpcProvider>(new StaticJsonRpcProvider(RPC_URL[id]));
   const [account, setAccount] = useState<string>('');
   // const [snackbar, setSnackbar] = useState<any>(null);
   const [chainId, setChainId] = useState<number>(0);
@@ -44,10 +44,25 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
 
   // const [web3Modal, setWeb3Modal] = useState()
   const web3Modal = new Web3Modal({
-    network: getChainData(CHAIN[0]).network,
+    network: getChainData(CHAIN[id]).network,
     cacheProvider: true, // optional
     providerOptions: providerOptions
   })
+  
+  // const [web3Modal, setWeb3Modal] = useState(new Web3Modal({
+  //   network: getChainData(CHAIN[id]).network,
+  //   cacheProvider: true, // optional
+  //   providerOptions: providerOptions
+  // }))
+
+  // useEffect(() => {
+  //   setWeb3Modal(new Web3Modal({
+  //     network: getChainData(CHAIN[id]).network,
+  //     cacheProvider: true, // optional
+  //     providerOptions: providerOptions
+  //   }))
+  // }, [id, providerOptions])
+
 
 
   const subscribeProvider = (provider: any) => {
@@ -59,10 +74,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
     provider.on("accountsChanged", (accounts: any) => {
       console.log("account changed.")
       setAccount(accounts[0]?.toLowerCase());
-      // setSnackbar({
-      //   type: "info",
-      //   message: "Account Changed",
-      // });
     });
     // Subscribe to chainId change
     provider.on("chainChanged", (chainId: number) => {
@@ -82,12 +93,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
   }, []);
 
   const connectWallet = async () => {
-    // const web3Modal = new Web3Modal({
-    //   network: getChainData(CHAIN).network,
-    //   cacheProvider: true, // optional
-    //   providerOptions: providerOptions
-    // })
-
     try{
       const provider = await web3Modal.connect()
       subscribeProvider(provider);
@@ -110,13 +115,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
   }
 
   const switchNetwork = async() => {
-    
-    // const web3Modal = new Web3Modal({
-    //   network: getChainData(CHAIN).network,
-    //   cacheProvider: true, // optional
-    //   providerOptions: providerOptions
-    // })
-
     try{
       const provider = await web3Modal.connect()
       subscribeProvider(provider);
@@ -135,13 +133,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
   }
 
   const disconnect = async () => {
-    
-    // const web3Modal = new Web3Modal({
-    //   network: getChainData(CHAIN).network,
-    //   cacheProvider: true, // optional
-    //   providerOptions: providerOptions
-    // })
-
     await web3Modal.clearCachedProvider()
     setAccount('')
   }

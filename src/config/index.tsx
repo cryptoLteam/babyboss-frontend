@@ -5,7 +5,10 @@ export const INFURA_ID = 'PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-'
 // export const RPC_URL = 'https://eth-mainnet.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-' //ethereum
 // export const RPC_URL = 'https://bsc-dataseed1.binance.org' //BSC Mainnet
 // export const RPC_URL = 'https://eth-rinkeby.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-' // rinkeby
-export const RPC_URL = 'https://eth-goerli.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-' // goerli
+export const RPC_URL = [
+  'https://eth-goerli.alchemyapi.io/v2/PkSg__OS-7f9zA6VGKy5UDEx1V28aD5-',
+  'https://matic-mumbai.chainstacklabs.com'
+] // goerli
 // export const RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545/' //BSC Testnet
 export const CHAIN = [5, 80001] // 4 // 97 //56
 

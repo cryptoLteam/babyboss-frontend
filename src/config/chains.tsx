@@ -226,6 +226,22 @@ const supportedChains: IChainData[] = [
     }
   },
   {
+    name: "Mumbai Testnet",
+    short_name: "mumbai",
+    chain: "mumbai",
+    network: "mumbaichain",
+    chain_id: 80001,
+    network_id: 80001,
+    rpc_url: "https://matic-mumbai.chainstacklabs.com",
+    native_currency: {
+      symbol: "MATIC",
+      name: "MATIC",
+      decimals: "18",
+      contractAddress: "",
+      balance: ""
+    }
+  },
+  {
     name: "Celo Mainnet",
     short_name: "celo",
     chain: "celo",

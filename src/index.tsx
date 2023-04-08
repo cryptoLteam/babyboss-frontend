@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { CookiesProvider } from "react-cookie";
@@ -10,13 +10,20 @@ import './index.css';
 const container = document.getElementById('root')!;
 const root = createRoot(container);
 
+export const SelectedChainId = ({ initialValue }: { initialValue: number }) => {
+  const [value, setValue] = useState(initialValue);
+
+  return {
+    value,
+    setValue,
+  };
+};
+
 root.render(
   <React.StrictMode>
-      <Web3ContextProvider>
-        <CookiesProvider>
-          <App />
-        </CookiesProvider>
-      </Web3ContextProvider>
+    <CookiesProvider>
+      <App />
+    </CookiesProvider>
   </React.StrictMode>
 );
 
