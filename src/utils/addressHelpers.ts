@@ -13,6 +13,11 @@ export const getNFTAddress = (id: number) => {
 export const getMechaAddress = (id: number) => {
   return getAddress(id, addresses.mecha)
 }
+
+export const getMarketplaceAddress = (id: number) => {
+  return getAddress(id, addresses.marketplace)
+}
+
 export const getStakingAddress = (id: number) => {
   return getAddress(id, addresses.staking)
 }

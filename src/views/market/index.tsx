@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import GlobModal from 'components/GlobModal'
 import { VscChromeClose, VscInfo, VscSettings } from "react-icons/vsc"
 import { useWeb3Context } from 'hooks/useWeb3Context';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL } from 'config/nfts';
-import { getStakingContract } from 'utils/contractHelpers';
+import { getMarketplaceContract } from 'utils/contractHelpers';
+import Moralis from "moralis";
+import { EvmChain } from "@moralisweb3/common-evm-utils";
+
+const API_KEY = "oaK7FkVxleNibQEBBnkKJjKihHOhidxRljMxJLDhEmqjAD8C0KweUWnXxzjcEpRU";
+const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Input = styled.input`
   display: none;
@@ -104,19 +110,44 @@ const Option = styled.option`
   color: #333;
   font-size: 16px;
   font-weight: bold;
-`;
-
+  `;
+  
 const Market = ({selectedChain}: {selectedChain: any}) => {
-  useEffect(() => {
-    selectedChain(1)
-  })
+  const web3Context = useWeb3Context();
+  const inputRef = useRef<HTMLInputElement>(null);
+	// const [nfliststs, setLists] = useState<Nft[]>([])  
+  const [history, setHistory] = useState<any>([]);
 
-  const web3Context = useWeb3Context()
+  useEffect(() => {
+    selectedChain(1);
+
+    const fetchItems =async (account:string) => {
+			const client = new ApolloClient({
+	  			uri: GRAPH_API_URL,
+  				cache: new InMemoryCache(),
+			  });
+			
+			  // const lists = await client.query<GetNftsData>({query: GET_NFTS, variables: {owner: account}});
+			
+			  // if(lists && lists.data.nfts.length > 0) {
+  			// 	setNfts(lists.data.nfts)
+			  // } else {
+	  		// 	setNfts([])
+			  // } 
+		}
+
+		if (web3Context?.account) {
+			fetchItems(web3Context.account);
+		}
+  })
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
   const [modalOpen3, setModalOpen3] = useState<any>(false)  
   const [message, setMessage] = useState<String>("")  
+  // buy product 
+  const [selectedPriceType, setSelectedPriceType] = useState<string>("");
+  const [selectedEmail, setSelectedEmail] = useState<string>("");
   // upload product
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
@@ -131,6 +162,31 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const [productPriceType, setProductPriceType] = useState<String>("");
   const [productEmail, setProductEmail] = useState<String>("");
  
+  // buy
+  const handleBuyOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedPriceType(event.target.value);
+  }
+
+  const handleBuyEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedEmail(event.target.value);
+  }
+
+  const handleBuySubmit = async() => {
+    if(!web3Context?.account) {
+      toast.error("Confirm your wallet connection!");
+      return
+    }
+
+    const isValidEmail: boolean = emailRegex.test(selectedEmail);
+
+    if (!isValidEmail) {
+      // inputRef.current.focus();
+      return;
+    }
+
+    const contract = getMarketplaceContract(1, web3Context?.provider);
+    await contract.methods.buyItem(1, 1, selectedPriceType, selectedEmail).send({from: web3Context.account});
+  }
 
   // admin 
   const handleAdminFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,11 +221,28 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     if (priceBB === 0) { return; }
     if (priceUSD === 0) { return; }
 
-    // file upload
     if (selectedFile) {
+      // file upload
+      await Moralis.start({
+        apiKey: API_KEY,
+      });
+    
+      const abi = [
+        {
+          path: "YOUR_FILE_PATH",
+          content: "YOUR_JSON_OR_BASE64",
+        },
+      ];
+    
+      const response = await Moralis.EvmApi.ipfs.uploadFolder({ abi });
+      const hashImg = (response.toJSON())[0]['path']; 
+      // contract
+
+      console.log(" hashImg: ", hashImg);
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+
+      await contract.methods.listItem(selectedOption, hashImg, insertCount, priceBB, priceUSD).send({from: web3Context.account});
     }
-
-
 
     setModalOpen2(false);
   }
@@ -178,11 +251,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     if (selectedFile) {
       const formData = new FormData();
       formData.append('file', selectedFile);
-
-      // Make API call to upload file
-      // axios.post('/api/upload', formData)
-      //   .then(response => console.log(response))
-      //   .catch(error => console.log(error));
     }
   };
 
@@ -194,8 +262,25 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
   const handleHistorySubmit = (e:React.MouseEvent<HTMLDivElement>): void => {
     setModalOpen3(true);
-    console.log("click3");
 
+    const fetchHistorys =async (account:string) => {
+			const client = new ApolloClient({
+	  			uri: GRAPH_API_URL,
+  				cache: new InMemoryCache(),
+			  });
+			
+			  // const lists = await client.query<GetNftsData>({query: GET_NFTS, variables: {owner: account}});
+			
+			  // if(lists && lists.data.nfts.length > 0) {
+  			// 	setNfts(lists.data.nfts)
+			  // } else {
+	  		// 	setNfts([])
+			  // } 
+		}
+
+		if (web3Context?.account) {
+			fetchHistorys(web3Context.account);
+		}
   }
 
   return (
@@ -230,22 +315,22 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
               <div className=' w-28 mb-2 mr-2'>
                 <label className=' text-black mt-2 float-right '>Price Type : </label>
               </div>
-              <Select value={selectedOption} onChange={handleAdminOptionChange}>
-                <Option value="">Choose an option</Option>
-                <Option value="apparels">apparels</Option>
-                <Option value="plushies">plushies</Option>
-                <Option value="misc">misc</Option>
+              <Select value={selectedPriceType} onChange={ handleBuyOptionChange }>
+                <Option value="">Choose Price Type</Option>
+                <Option value="BBOSS">BBOSS</Option>
+                <Option value="MATIC">MATIC</Option>
+                <Option value="USDT">USDT</Option>
               </Select>
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
                 <label className=' text-black mt-2 float-right '>Email : </label>
               </div>
-              <InputVal type='email' required />
+              <InputVal type='email' value={ selectedEmail } onChange={ handleBuyEmailChange } />
             </div>
           </div>
           <div className=' flex items-center justify-center py-3'>
-            <button onClick={() => setModalOpen2(false)} className=' px-16 py-2 text-sm rounded-3xl text-black border-2 border-black'>Submit</button>
+            <button onClick={ handleBuySubmit } className=' px-16 py-2 text-sm rounded-3xl text-black border-2 border-black'>Submit</button>
           </div>
         </div>
 			</GlobModal>  

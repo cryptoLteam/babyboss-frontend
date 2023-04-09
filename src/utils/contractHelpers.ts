@@ -9,6 +9,7 @@ import {
   getRegisterAddress,
   getRouterAddress,
   getMechaAddress,
+  getMarketplaceAddress,
 } from 'utils/addressHelpers'
 
 // ABI
@@ -18,6 +19,7 @@ import NFTStaking from 'config/abis/nftStaking.json'
 import MultiCallAbi from 'config/abis/multicall.json'
 import RegisterAbi from 'config/abis/register.json'
 import RouterABI from 'config/abis/router.json'
+import MarktplaceABI from 'config/abis/marketplace.json'
 
 export function getContractWithWeb3(abi: any, address: string, provider: any) {
   const web3 = new Web3(provider)
@@ -47,4 +49,8 @@ export const getRegisterContract = (id: number, provider: any) => {
 
 export const getRouterContract = (id: number, provider: any) => {
   return getContractWithWeb3(RouterABI, getRouterAddress(id), provider)
+}
+
+export const getMarketplaceContract = (id: number, provider: any) => {
+  return getContractWithWeb3(MarktplaceABI, getMarketplaceAddress(id), provider);
 }
