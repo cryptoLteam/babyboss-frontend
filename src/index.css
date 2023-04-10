@@ -28,7 +28,7 @@ body {
 } 
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -162,4 +162,34 @@ body {
   display: block;
 }
 
+.list-table {
+  width: 700px;
+}
 
+.list-table div {
+  padding: 3px 10px;
+}
+
+.list-table .head div {
+  color: black;
+  font-weight: bold;
+}
+
+.list-table .main {
+  padding: 0px 6px;
+}
+
+
+.list-table::-webkit-scrollbar {
+  width: 1px;
+}
+
+.list-table::-webkit-scrollbar-thumb {
+  background: lightgray;
+  border-radius: 8px;
+}
+
+.list-table::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px white;
+  border-radius: 10px;
+}
