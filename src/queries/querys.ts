@@ -39,22 +39,6 @@ export interface Histories {
 export interface HistoriesData {
 	items : Histories[];
 }  
-
-export const GET_MARKET_ITEMS = gql`
-	query GetMarketItems {
-		itemLists {
-			createdAt
-			count
-			category
-			imgHash
-			index
-			priceForBBOSS
-			priceForMATIC
-			priceForUSD
-			title
-		}
-	}
-`
  
 export const GET_HISTORIES = gql`
 	query GetHistories {

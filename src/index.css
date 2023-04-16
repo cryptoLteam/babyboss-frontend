@@ -133,6 +133,13 @@ body {
   padding-right: 20px;
 }
 
+.footer-main .body a img {
+  height: 100%;
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
 .footer-main .category-footer {
   /* @apply sm:p-0 sm:justify-center lg:right-0; */
 }

@@ -6,11 +6,11 @@ import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL_MARKETPLACE, BACKEND_URL } from 'config/nfts';
-import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, GET_MARKET_ITEMS, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
+import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
 import { getMarketplaceContract } from 'utils/contractHelpers';
 import Moralis from "moralis";
 // import * from "@moralisweb3";
-import axios from 'axios';
+import axios, {isCancel, AxiosError} from 'axios';
 import { CHAIN } from 'config';
 import { ethers } from 'ethers';
 // import Moralis from "moralis";
@@ -126,26 +126,26 @@ const ownerWallet = '0x2db1f6eC280AECf2035567E862700f24D952573d'
 const Market = ({selectedChain}: {selectedChain: any}) => {
   const web3Context = useWeb3Context();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [marketItems, setMarketItems] = useState<any>([]);
+  const [uploadHistory, setUploadHistory] = useState<any>([]);
   const [buyloadHistory, setbuyloadHistory] = useState<any>([]);
   const [tab, selectTab] = useState<string>('apparels')
   
   useEffect(() => {
     selectedChain(1);
 
-    const fetchItems =async () => {
+    const fetchItems =async (account:string) => {
 			const client = new ApolloClient({
         uri: GRAPH_API_URL_MARKETPLACE,
         cache: new InMemoryCache(),
       });
 
-      const lists = await client.query<any>({ query: GET_MARKET_ITEMS });
+      const lists = await client.query<any>({ query: GET_HISTORIES });
       const buylists = await client.query<any>({ query: GET_BUY_HISTORIES })
 
-      if(lists && lists.data.itemLists.length > 0) {
-        setMarketItems(lists.data.itemLists);
+      if(lists && lists.data.listHistories.length > 0) {
+        setUploadHistory(lists.data.listHistories);
       } else {
-        setMarketItems([]);
+        setUploadHistory([]);
       } 
       // console.log(lists);
       if(buylists && buylists.data.buyHistories.length > 0) {
@@ -156,8 +156,10 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
 		}
     
-    fetchItems();
-  }, [selectedChain, tab, marketItems])
+		if (web3Context?.account) {
+      fetchItems(web3Context.account);
+		}
+  }, [selectedChain, tab, uploadHistory])
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
@@ -202,8 +204,8 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     } else if (type === "STABLE" ) {
       setSelectedPriceType("STABLE");   
       setProductPrice(priceForUSD as unknown as number);
-    } else if (type === "NONE" ){
-      setSelectedPriceType("NONE");   
+    } else if (type === "NONE" ) {
+      setSelectedPriceType("NONE");
       setProductPrice(0);
     }
  
@@ -226,9 +228,9 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     let selInfo:any;
 
     console.log("-------------");
-    console.log(marketItems);
+    console.log(uploadHistory);
 
-    marketItems.forEach((item:any) => {
+    uploadHistory.forEach((item:any) => {
       if (item.index === ind) {
         selInfo = item;
       }
@@ -606,7 +608,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     </div>
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
       <div className="grid lg:grid-cols-3 grid-cols-1">
-        {marketItems?.map((item:Histories, index:number) => {
+        {uploadHistory?.map((item:Histories, index:number) => {
           console.log("sniper: count: ", item.count)
           let result = []
           for(let i = 0; i < item.count; i++) {
