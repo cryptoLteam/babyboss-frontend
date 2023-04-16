@@ -140,7 +140,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         cache: new InMemoryCache(),
       });
 
-      const lists = await client.query<any>({ query: GET_MARKET_ITEMS });
+      const lists = await client.query<any>({ query: GET_HISTORIES });
       const buylists = await client.query<any>({ query: GET_BUY_HISTORIES })
 
       if(lists && lists.data.itemLists.length > 0) {
@@ -216,6 +216,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const [insertCount, setInsertCount] = useState<number>(0);
   const [priceBB, setPriceBB] = useState<number>(0);
   const [priceUSD, setPriceUSD] = useState<number>(0);
+  const [productImage, setProductImage] = useState<string>("");
   
   // buy
   const handleBuyOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -257,6 +258,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     });
 
     setSelectedItem(selInfo);
+    setProductImage(selInfo.imgHash);
     setModalOpen1(true);
   } 
 
@@ -370,7 +372,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 		  return 
 		}
 
-    // if (selectedFile === null) { toast.error("Select Category"); return; }
+    if (selectedFile === null) { toast.error("Select File"); return; }
     if (selectedOption === '') { toast.error("Select Category"); return; }
     if (productTitle === '') { toast.error("Enter Title");return; }
     if (insertCount === 0) { toast.error("Enter Count");return; }
@@ -439,7 +441,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 					</div>
 					<div className='items-center justify-center w-full pt-1 pb-1'>
             <div className='flex mt-2'>
-              <img src='{ productImage }' alt=''/>
+              <img src={ `${ BACKEND_URL }/uploads${productImage}` } style={{ width: '300px', margin: 'auto' }}  />
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
@@ -660,45 +662,44 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
       <div className="grid lg:grid-cols-3 grid-cols-1">
         {marketItems?.map((item:Histories, index:number) => {
-          return (          
-            (item.category === tab) ? (
-              <div key={index} className=' mx-5 my-5 cursor-pointer'>
-                <div className='bg-red-500 rounded-3xl'>
-                  <img src='images/image-layer2.png' alt=''/>
-                </div>
-                <div className='pt-1 lg:text-1xl'>
-                  {`${item.title}`}
-                </div>
-                <div className='flex align-center justify-between mt-2'>
-                  <div className=' lg:text-md text-sm'>
-                    Remain Count
+          console.log("sniper: count: ", item.count)
+          let result = []
+          for(let i = 0; i < item.count; i++) {
+            result.push(          
+              (item.category === tab) ? (
+                <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
+                  <div className='bg-red-500 rounded-3xl'>
+                    <img src='images/image-layer2.png' alt=''/>
                   </div>
-                  <div style={{ color: '#ff06f5' }}>{ item.count }</div>
-                </div>
-                <div className='flex align-center justify-between mt-2'>
-                  <div className=' lg:text-md text-sm'>
-                    Price(BBOSS)
+                  <div className='pt-1 lg:text-1xl'>
+                    {`${item.title} #${i}`}
                   </div>
-                  <div style={{ color: '#ff06f5' }}>{ (item.priceForBBOSS).toFixed(4) }</div>
-                </div>
-                <div className='flex align-center justify-between'>
-                  <div className=' lg:text-md text-sm'>
-                    Price(USDT)
+                  <div className='flex align-center justify-between mt-2'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(BBOSS)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForBBOSS }</div>
                   </div>
-                  <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD).toFixed(4) }</div>
-                </div>
-                <div className='flex align-center justify-between'>
-                  <div className=' lg:text-md text-sm'>
-                    Price(MATIC)
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(USDT)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForUSD }</div>
                   </div>
-                  <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD / maticPrice).toFixed(4) }</div>
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(MATIC)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD / maticPrice).toFixed(4) }</div>
+                  </div>
+                  <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
+                    <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
+                  </div>
                 </div>
-                <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
-                  <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
-                </div>
-              </div>
-            ) : <></>
-          )
+              ) : <></>
+            )
+          }
+          return result
         })}        
       </div>
     </div>      

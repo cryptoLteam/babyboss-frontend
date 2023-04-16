@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import footerLayer from '../assets/footer.png'
+import { url } from 'inspector'
 
 const Footer = () => {
   
@@ -18,9 +19,17 @@ const Footer = () => {
         </div>
         <div className='category-footer sm:justify-center lg:float-right md:float-none sm:float-none'>
           <div className='flex'>
-            <a className='footer-icons' href='https://opensea.io/collection/babybossnft'  />
-            <a className='footer-icons' href='https://instagram.com/babybossnft?igshid=Mzc1MmZhNjY=' />
-            <a className='footer-icons' href='https://twitter.com/babybossnft?s=21&t=P8UFi7S8A4VLar67cgVp7g' />
+            <div className='footer-icons'>
+              <a href='https://opensea.io/collection/babybossnft' >
+                <img src='/images/icons/opensea.png' />
+              </a>
+            </div>
+            <a className='footer-icons' href='https://instagram.com/babybossnft?igshid=Mzc1MmZhNjY='>
+              <img src='/images/icons/instagram.png' />
+            </a>
+            <a className='footer-icons' href='https://twitter.com/babybossnft?s=21&t=P8UFi7S8A4VLar67cgVp7g'>
+              <img src='/images/icons/twitter.png' />
+            </a>
           </div>
           <div style={{ paddingLeft: '10px', color: '#FFFFFF', paddingTop: '20px' }}>
             Built by BabyBoss. All Rights Reserved © 2022 

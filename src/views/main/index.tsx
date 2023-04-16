@@ -125,7 +125,7 @@ const Main = (setLoader: any) => {
 						merch and more, available to order today.
 					</p>
 					<div className=' text-left md:text-center lg:text-left'>
-						<button className='ml-10 my-5 mr-10 bg-red-100 w-60 pt-2 py-2 mt-4 rounded-full text-center font3 lg:text-2xl ' style={{ color: '#bd4f9d' }}>SHOW NOW!</button>
+						<button className='ml-10 my-5 mr-10 bg-red-100 w-60 pt-2 py-2 mt-4 rounded-full text-center font3 lg:text-2xl ' style={{ color: '#ff06f5' }}>SHOW NOW!</button>
 					</div>
         </div>
 			</div>
