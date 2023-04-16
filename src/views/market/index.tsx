@@ -8,10 +8,11 @@ import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL_MARKETPLACE } from 'config/nfts';
 import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
 import { getMarketplaceContract } from 'utils/contractHelpers';
-import Moralis from "moralis";
-import { EvmChain } from "@moralisweb3/common-evm-utils";
-import { forEach } from 'lodash';
-import { create } from 'ipfs-http-client';
+import { CHAIN } from 'config';
+// import Moralis from "moralis";
+// import { EvmChain } from "@moralisweb3/common-evm-utils";
+// import { forEach } from 'lodash';
+// import { create } from 'ipfs-http-client';
 
 const API_KEY = "oaK7FkVxleNibQEBBnkKJjKihHOhidxRljMxJLDhEmqjAD8C0KweUWnXxzjcEpRU";
 const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -114,7 +115,10 @@ const Option = styled.option`
   font-size: 16px;
   font-weight: bold;
   `;
-  
+
+
+const ownerWallet = '0x2db1f6eC280AECf2035567E862700f24D952573d'
+
 const Market = ({selectedChain}: {selectedChain: any}) => {
   const web3Context = useWeb3Context();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -301,45 +305,26 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       toast.error("Confirm your wallet connection!");
       return
     }
+		if(web3Context?.chainId !== CHAIN[1]) {
+		  toast.error("Confirm you are on Ethereum Network!")
+		  return 
+		}
 
-    if (selectedFile === null) { return; }
-    if (selectedOption === '') { return; }
-    if (productTitle === '') { return; }
-    if (insertCount === 0) { return; }
-    if (priceBB === 0) { return; }
-    if (priceMatic === 0) { return; }
-    if (priceUSD === 0) { return; }
+    // if (selectedFile === null) { toast.error("Select Category"); return; }
+    if (selectedOption === '') { toast.error("Select Category"); return; }
+    if (productTitle === '') { toast.error("Enter Title");return; }
+    if (insertCount === 0) { toast.error("Enter Count");return; }
+    if (priceBB === 0) { toast.error("Enter Price for BBOSS");return; }
+    if (priceMatic === 0) { toast.error("Enter Price for MATIC");return; }
+    if (priceUSD === 0) { toast.error("enter Price for USD");return; }
 
-    if (selectedFile) {
-      // file upload
-      await Moralis.start({
-        apiKey: API_KEY,
-      });
-    
-      // const abi = [
-      //   {
-      //     path: "YOUR_FILE_PATH",
-      //     content: "YOUR_JSON_OR_BASE64",
-      //   },
-      // ];
-      // const response = await Moralis.EvmApi.ipfs.uploadFolder({ abi });
-      // const hashImg = (response.toJSON())[0]['path']; 
 
-      const ipfs = create({ url: "https://ipfs.infura.io:5001/api/v0" });
-      const fileAdded = await ipfs.add(selectedFile);
-      const hash = `https://ipfs.infura.io/ipfs/${fileAdded.path}`
-      // const hash = fileAdded.cid.toString();
+    ///////// ************* ////////////////////
+    ///    upload image into db
+    ///////// ************* ////////////////////
 
-      // contract
-      console.log(`File uploaded to IPFS with hash: ${hash}`);
-
-      // console.log(" hashImg: ", hashImg);
-      // return;
-
-      const contract = getMarketplaceContract(1, web3Context?.provider);
-
-      // await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
-    }
+    const contract = getMarketplaceContract(1, web3Context?.provider);
+    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
 
     setModalOpen2(false);
   }
@@ -561,14 +546,14 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         </div>
     </GlobModal>
 
-      <div className=' fixed top-80 bg-red-400 rounded-r-md cursor-pointer text-2xl '>
+      {web3Context?.account && ownerWallet.toLowerCase() === web3Context?.account.toLowerCase() && <div className=' fixed top-80 bg-red-400 rounded-r-md cursor-pointer text-2xl '>
         <div className='p-3 hover:text-white' onClick={ handleHistorySubmit } >
           <VscInfo />
         </div>
         <div className='p-3 hover:text-white' onClick={() => setModalOpen2(true) } >
           <VscSettings />
         </div>
-      </div>
+      </div>}
       
       <div className='px-4 lg:px-32 py-4 lg:pt-20'>
         <div className="lg:flex lg:justify-between lg:flex-row">

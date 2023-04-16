@@ -9,6 +9,7 @@ import { getStakingContract } from 'utils/contractHelpers';
 import { ethers } from 'ethers';
 import { getNFTAddress } from 'utils/addressHelpers';
 import { toast } from 'react-toastify';
+import { CHAIN } from 'config';
 
 
 const Stake = () => {
@@ -54,6 +55,10 @@ const Stake = () => {
 		if(!web3Context?.account) {
 			toast.error("Confirm your wallet connection!")
 			return
+		}
+		if(web3Context?.chainId !== CHAIN[0]) {
+		  toast.error("Confirm you are on Ethereum Network!")
+		  return 
 		}
 		const contract = getStakingContract(0, web3Context.provider) 
 		await contract.methods.claimRewards(getNFTAddress(0)).send({from: web3Context.account})
