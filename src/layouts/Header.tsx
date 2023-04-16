@@ -13,9 +13,9 @@ const Header = () => {
       </Link>
       <div className='category'>
         <Link to="/" className='font3'>HOME</Link>
-        <Link to="/stake" className='font3'>STAKE</Link>		
-		<Link to="/market" className='font3'>SHOP</Link>		
-		<WalletConnectButton />
+        <Link to="/stake" className='stake_link font3'>STAKE</Link>		
+		    <Link to="/market" className='font3'>SHOP</Link>		
+		    <WalletConnectButton />
       </div>
     </div>
   )

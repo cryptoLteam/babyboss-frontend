@@ -18,16 +18,9 @@ const Footer = () => {
         </div>
         <div className='category-footer sm:justify-center lg:float-right md:float-none sm:float-none'>
           <div className='flex'>
-            <div className='footer-icons'>
-            </div>
-            <div className='footer-icons'>
-            </div>
-            <div className='footer-icons'>
-            </div>
-            <div className='footer-icons'>
-            </div>
-            <div className='footer-icons'>
-            </div>
+            <a className='footer-icons' href='https://opensea.io/collection/babybossnft'  />
+            <a className='footer-icons' href='https://instagram.com/babybossnft?igshid=Mzc1MmZhNjY=' />
+            <a className='footer-icons' href='https://twitter.com/babybossnft?s=21&t=P8UFi7S8A4VLar67cgVp7g' />
           </div>
           <div style={{ paddingLeft: '10px', color: '#FFFFFF', paddingTop: '20px' }}>
             Built by BabyBoss. All Rights Reserved © 2022 

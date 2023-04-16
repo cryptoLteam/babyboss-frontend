@@ -1,3 +1,4 @@
+import exp from 'constants'
 import { Address } from './types'
 
 export interface NFTConfig {
@@ -5,6 +6,7 @@ export interface NFTConfig {
   address: Address
 }
 
+export const BACKEND_URL = 'http://localhost:5000'
 export const NFT_NUM = 2600
 export const REWARD_PER_DAY = 5
 export const DAY_SECOND = 15 * 60 // 86400

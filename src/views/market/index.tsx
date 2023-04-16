@@ -5,13 +5,15 @@ import { useWeb3Context } from 'hooks/useWeb3Context';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
-import { GRAPH_API_URL_MARKETPLACE } from 'config/nfts';
+import { GRAPH_API_URL_MARKETPLACE, BACKEND_URL } from 'config/nfts';
 import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
 import { getMarketplaceContract } from 'utils/contractHelpers';
 import Moralis from "moralis";
+// import * from "@moralisweb3";
 import { EvmChain } from "@moralisweb3/common-evm-utils";
 import { forEach } from 'lodash';
 import { create } from 'ipfs-http-client';
+import axios, {isCancel, AxiosError} from 'axios';
 
 const API_KEY = "oaK7FkVxleNibQEBBnkKJjKihHOhidxRljMxJLDhEmqjAD8C0KweUWnXxzjcEpRU";
 const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -123,8 +125,10 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const [buyhistory, setBuyHistory] = useState<any>([]);
   const [selIndex, setSelIndex] = useState<number>(0)
   const [tab, selectTab] = useState<string>('apparels')
-
+  
   useEffect(() => {
+    selectedChain(1);
+
     const fetchItems =async (account:string) => {
 			const client = new ApolloClient({
         uri: GRAPH_API_URL_MARKETPLACE,
@@ -139,10 +143,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       } else {
         setUploadHistory([]);
       } 
-
-      console.log(lists);
-
-
+      // console.log(lists);
       if(buylists && buylists.data.buyHistories.length > 0) {
         setbuyloadHistory(buylists.data.buyHistories);
       } else {
@@ -150,14 +151,13 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       } 
 
 		}
-
+    
 		if (web3Context?.account) {
-			fetchItems(web3Context.account);
+      fetchItems(web3Context.account);
 		}
+  }, [selectedChain, tab, uploadHistory])
+  
 
-    selectedChain(1);
-
-  }, [selectedChain])
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
@@ -225,10 +225,12 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const handleOpenBuyModal = (ind: number) => {
     let selInfo:any;
 
+    console.log("-------------");
+    console.log(uploadHistory);
+
     uploadHistory.forEach((item:any) => {
       if (item.index === ind) {
         selInfo = item;
-        console.log(item);
       }
     });
 
@@ -263,6 +265,10 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
     const contract = getMarketplaceContract(1, web3Context?.provider);
     await contract.methods.buyItem(productId, selectedCount,  categoryName, productName, selectedPriceType, selectedEmail).send({from: web3Context.account});
+
+    setSelectedEmail("");
+    setSelectedCount(0);
+    setSelectedPriceType("NONE");
 
     setModalOpen1(false);
   }
@@ -312,34 +318,31 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
     if (selectedFile) {
       // file upload
-      await Moralis.start({
-        apiKey: API_KEY,
-      });
-    
-      // const abi = [
-      //   {
-      //     path: "YOUR_FILE_PATH",
-      //     content: "YOUR_JSON_OR_BASE64",
-      //   },
-      // ];
-      // const response = await Moralis.EvmApi.ipfs.uploadFolder({ abi });
-      // const hashImg = (response.toJSON())[0]['path']; 
+      let hashImg = ""; 
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
-      const ipfs = create({ url: "https://ipfs.infura.io:5001/api/v0" });
-      const fileAdded = await ipfs.add(selectedFile);
-      const hash = `https://ipfs.infura.io/ipfs/${fileAdded.path}`
-      // const hash = fileAdded.cid.toString();
+      await axios.post(BACKEND_URL + '/api/upload', formData)
+        .then(function (response) {
+          console.log("hashImg");
+          hashImg = response.data;
+        }).catch(function(error){
+          console.log(error);
+        });
 
-      // contract
-      console.log(`File uploaded to IPFS with hash: ${hash}`);
-
-      // console.log(" hashImg: ", hashImg);
-      // return;
+        console.log(hashImg);
 
       const contract = getMarketplaceContract(1, web3Context?.provider);
-
-      // await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
+      await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
     }
+
+    setSelectedFile(null);
+    setSelectedOption('');
+    setProductTitle('');
+    setInsertCount(0);
+    setPriceBB(0);
+    setPriceMatic(0);
+    setPriceUSD(0);
 
     setModalOpen2(false);
   }
@@ -441,7 +444,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
             <div className='flex justify-center'>
               <Label htmlFor="file-input">
                 {selectedFile ? selectedFile.name.substring(0, 5) + '...' : 'Choose a file'}
-                <Input id="file-input" type="file" onChange={ handleAdminFileChange } autoFocus />
+                <Input id="file-input" type="file" onChange={ handleAdminFileChange } accept="image/png, image/jpg, image/jpeg" autoFocus />
               </Label>
               {/* <Button onClick={handleFileUpload}>Upload</Button> */}
             </div>
