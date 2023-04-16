@@ -7,7 +7,7 @@ type Props = {
 	owner: any,
 	staked: any,
 	handleItemClick: any,
-	handleItem: (id: any) => void
+	handleItem: (id: any) => void,
 };
 
 function NftItem({ id, imgSrc, amount, owner, staked, handleItemClick, handleItem }: Props) {
@@ -30,23 +30,25 @@ function NftItem({ id, imgSrc, amount, owner, staked, handleItemClick, handleIte
 	
 
 	return (
-    <div className={ sel }  onClick={ handleClick }>
+    <div className={ sel }>
+		<div onClick={ handleClick }>
 			<div className=' absolute ml-4 mt-4 text-white '>{(staked === false)? 'Unstacked':'Stacked' }</div>
 				<img src={ imgSrc } alt=''/>
 			<div>
 				<div className='float-left lg:ml-4 '> No #{ id } </div>	
-				<div className='float-right text-right lg:mr-4 text-green-600 '> 
+				{/* <div className='float-right text-right lg:mr-4 text-green-600 '> 
 					{ amount }
-				</div>	
+				</div>	 */}
 				<br/>
 				<div className='text-right text-green-600 lg:mr-4'>
 					{ owner }
 				</div>
 			</div>
-			<div className='lg:mt-3 mx-5 p-2 text-center text-white rounded-full' style={{ backgroundColor: '#ab29bb' }} onClick={() => handleItem(id)}>
-				Unstake
-			</div>
 		</div>
+		<div className='lg:mt-3 mx-5 p-2 text-center text-white rounded-full' style={{ backgroundColor: '#ab29bb' }} onClick={() => handleItem(id)}>
+			{staked? "Unstake" : "Stake"}
+		</div>
+	</div>
   )
 }
 

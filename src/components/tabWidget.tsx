@@ -6,6 +6,7 @@ import { Web3Context } from 'contexts/Web3Context';
 import { useWeb3Context } from 'hooks/useWeb3Context';
 import { toast } from 'react-toastify';
 import { getNFTAddress, getStakingAddress } from 'utils/addressHelpers';
+import { CHAIN, NFT_IPFS } from 'config';
 
 type Props = {
   nftlists: any
@@ -35,6 +36,7 @@ function TabWidget({ nftlists }: Props) {
     const fetchIsApprovedForAllMecha = async (account: string) => {
       const contract = getMechaContract(0, web3Context?.provider)
       const result = await contract.methods.isApprovedForAll(account, getStakingAddress(0)).call()
+      console.log("sniper: result: ", result)
       setIsApprovedForAllMecha(result)
     }
     if(web3Context?.account) {
@@ -77,7 +79,8 @@ function TabWidget({ nftlists }: Props) {
   }
 
   const handleItem = (id: any) => {
-    const item = nftItems.filter((item: any) => Number(item.id) === id)
+    const item = nftItems.filter((item: any) => Number(item.tokenId) === Number(id))
+    console.log("sniper: handleItem: ", id, item, nftItems)
     if(item && item.length > 0) {
       if(item[0].stake === true) {
         handleUnStakeItems([Number(id)])
@@ -92,6 +95,10 @@ function TabWidget({ nftlists }: Props) {
       toast.error("Confirm your wallet connection.")
       return
     }
+    if(web3Context?.chainId !== CHAIN[0]) {
+      toast.error("Confirm you are on Ethereum Network!")
+      return 
+    }
     const nftAddress = getNFTAddress(0)
     const stakingAddress = getStakingAddress(0)
     if(isApprovedForAll === false) {
@@ -100,7 +107,7 @@ function TabWidget({ nftlists }: Props) {
     }
     const contract = getStakingContract(0, web3Context?.provider)
     await contract.methods.stake(nftAddress, ids).send({from: web3Context?.account})
-    toast.error("Staked Successfully!")
+    toast.success("Staked Successfully!")
 
     setSelectedNFTsonWallet([])
     setSelectedNFTsonStaking([])
@@ -111,6 +118,10 @@ function TabWidget({ nftlists }: Props) {
       toast.error("Confirm your wallet connection.")
       return
     }
+    if(web3Context?.chainId !== CHAIN[0]) {
+      toast.error("Confirm you are on Ethereum Network!")
+      return 
+    }
     const nftAddress = getNFTAddress(0)
     const stakingAddress = getStakingAddress(0)
     if(isApprovedForAllMecha === false) {
@@ -119,7 +130,7 @@ function TabWidget({ nftlists }: Props) {
     }
     const contract = getStakingContract(0, web3Context?.provider)
     await contract.methods.unStake(nftAddress, ids).send({from: web3Context?.account})
-    toast.error("Staked Successfully!")
+    toast.success("Staked Successfully!")
 
     setSelectedNFTsonWallet([])
     setSelectedNFTsonStaking([])
@@ -158,14 +169,14 @@ function TabWidget({ nftlists }: Props) {
       </div>     
       {/* Tab content */}
       <div className='py-6'>
-        <div id="nft-lists" className='grid lg:grid-cols-4 grid-cols-2 cursor-pointer relative ' style={{ height: "800px", overflowY: "auto" }}>
+        <div id="nft-lists" className='grid lg:grid-cols-4 grid-cols-2 cursor-pointer relative ' style={{overflowY: "auto" }}>
 				{selectedTab === 0 &&
           nftItems?.map((item, index) => (
             (item['stake'] === true) ? (
               <NftItem 
                 key={index} 
                 id={ item['tokenId'] } 
-                imgSrc="/images/imgs/stake/nfts/nft1.png" 
+                imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
                 amount="200" owner={ '' } staked={ item['stake'] } 
                 handleItemClick={ handleItemClick }
                 handleItem={handleItem}
@@ -179,7 +190,7 @@ function TabWidget({ nftlists }: Props) {
               <NftItem 
                 key={index} 
                 id={ item['tokenId'] } 
-                imgSrc="/images/imgs/stake/nfts/nft1.png" 
+                imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
                 amount="200" owner={ '' } 
                 staked={ item['stake'] }
                 handleItemClick={ handleItemClick }

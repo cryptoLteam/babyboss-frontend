@@ -12,7 +12,7 @@ export const RPC_URL = [
 // export const RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545/' //BSC Testnet
 export const CHAIN = [5, 80001] // 4 // 97 //56
 
-export const NFT_IPFS = 'https://newgate.mypinata.cloud/ipfs/Qma3pitoFVPR8AvP2UepPjvn6wLwG6q4KioV1ULQ5sHRcA/'
+export const NFT_IPFS = 'https://ipfs.io/ipfs/QmaY8onxfq2XvxthsphisjdMiWjA7fVWaEFeNmr7baTCaa/'
 
 export const DEFAULT_TOKEN_DECIMAL = BIG_TEN.pow(18)
 export const DEFAULT_GAS_LIMIT = 200000

@@ -43,17 +43,16 @@ export interface HistoriesData {
 export const GET_HISTORIES = gql`
 	query GetHistories {
 		listHistories {
-			id
-			index
-			category
-			title
+			createdAt
 			count
+			category
 			imgHash
+			index
 			priceForBBOSS
 			priceForMATIC
 			priceForUSD
-			createdAt
-		}
+			title
+		  }
 	}
 `
 

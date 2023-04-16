@@ -10,10 +10,13 @@ import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GE
 import { getMarketplaceContract } from 'utils/contractHelpers';
 import Moralis from "moralis";
 // import * from "@moralisweb3";
-import { EvmChain } from "@moralisweb3/common-evm-utils";
-import { forEach } from 'lodash';
-import { create } from 'ipfs-http-client';
 import axios, {isCancel, AxiosError} from 'axios';
+import { CHAIN } from 'config';
+import { ethers } from 'ethers';
+// import Moralis from "moralis";
+// import { EvmChain } from "@moralisweb3/common-evm-utils";
+// import { forEach } from 'lodash';
+// import { create } from 'ipfs-http-client';
 
 const API_KEY = "oaK7FkVxleNibQEBBnkKJjKihHOhidxRljMxJLDhEmqjAD8C0KweUWnXxzjcEpRU";
 const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -116,14 +119,15 @@ const Option = styled.option`
   font-size: 16px;
   font-weight: bold;
   `;
-  
+
+
+const ownerWallet = '0x2db1f6eC280AECf2035567E862700f24D952573d'
+
 const Market = ({selectedChain}: {selectedChain: any}) => {
   const web3Context = useWeb3Context();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploadHistory, setUploadHistory] = useState<any>([]);
   const [buyloadHistory, setbuyloadHistory] = useState<any>([]);
-  const [buyhistory, setBuyHistory] = useState<any>([]);
-  const [selIndex, setSelIndex] = useState<number>(0)
   const [tab, selectTab] = useState<string>('apparels')
   
   useEffect(() => {
@@ -156,8 +160,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       fetchItems(web3Context.account);
 		}
   }, [selectedChain, tab, uploadHistory])
-  
-
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
@@ -307,14 +309,18 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       toast.error("Confirm your wallet connection!");
       return
     }
+		if(web3Context?.chainId !== CHAIN[1]) {
+		  toast.error("Confirm you are on Ethereum Network!")
+		  return 
+		}
 
-    if (selectedFile === null) { return; }
-    if (selectedOption === '') { return; }
-    if (productTitle === '') { return; }
-    if (insertCount === 0) { return; }
-    if (priceBB === 0) { return; }
-    if (priceMatic === 0) { return; }
-    if (priceUSD === 0) { return; }
+    // if (selectedFile === null) { toast.error("Select Category"); return; }
+    if (selectedOption === '') { toast.error("Select Category"); return; }
+    if (productTitle === '') { toast.error("Enter Title");return; }
+    if (insertCount === 0) { toast.error("Enter Count");return; }
+    if (priceBB === 0) { toast.error("Enter Price for BBOSS");return; }
+    if (priceMatic === 0) { toast.error("Enter Price for MATIC");return; }
+    if (priceUSD === 0) { toast.error("enter Price for USD");return; }
 
     if (selectedFile) {
       // file upload
@@ -335,6 +341,10 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       const contract = getMarketplaceContract(1, web3Context?.provider);
       await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
     }
+
+    const contract = getMarketplaceContract(1, web3Context?.provider);
+    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, 
+        ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseEther(priceMatic.toString()), ethers.utils.parseEther(priceUSD.toString())).send({from: web3Context.account});
 
     setSelectedFile(null);
     setSelectedOption('');
@@ -564,14 +574,14 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         </div>
     </GlobModal>
 
-      <div className=' fixed top-80 bg-red-400 rounded-r-md cursor-pointer text-2xl '>
+      {web3Context?.account && ownerWallet.toLowerCase() === web3Context?.account.toLowerCase() && <div className=' fixed top-80 bg-red-400 rounded-r-md cursor-pointer text-2xl '>
         <div className='p-3 hover:text-white' onClick={ handleHistorySubmit } >
           <VscInfo />
         </div>
         <div className='p-3 hover:text-white' onClick={() => setModalOpen2(true) } >
           <VscSettings />
         </div>
-      </div>
+      </div>}
       
       <div className='px-4 lg:px-32 py-4 lg:pt-20'>
         <div className="lg:flex lg:justify-between lg:flex-row">
@@ -597,25 +607,47 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       </div>
     </div>
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
-      <div className="flex grid lg:grid-cols-4 grid-cols-1">
-        {uploadHistory?.map((item:Histories, index:number) => (          
-          (item.category === tab) ? (
-            <div key={index} className=' mx-5 my-5 cursor-pointer'>
-              <div className='bg-red-500 rounded-3xl'>
-                <img src='images/image-layer2.png' />
-              </div>
-              <div className=' text-center pt-1 lg:text-1xl'>
-                { item.title }
-              </div>
-              <div className=' text-center pt-2 lg:text-2xl text-sm' style={{ color: '#ff06f5' }}>
-                { item.priceForBBOSS } BBOSS
-              </div>
-              <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
-                <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
-              </div>
-            </div>
-          ) : ''
-        ))}        
+      <div className="grid lg:grid-cols-3 grid-cols-1">
+        {uploadHistory?.map((item:Histories, index:number) => {
+          console.log("sniper: count: ", item.count)
+          let result = []
+          for(let i = 0; i < item.count; i++) {
+            result.push(          
+              (item.category === tab) ? (
+                <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
+                  <div className='bg-red-500 rounded-3xl'>
+                    <img src='images/image-layer2.png' alt=''/>
+                  </div>
+                  <div className='pt-1 lg:text-1xl'>
+                    {`${item.title} #${i}`}
+                  </div>
+                  <div className='flex align-center justify-between mt-2'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(BBOSS)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForBBOSS }</div>
+                  </div>
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(USDT)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForUSD }</div>
+                  </div>
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(MATIC)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForMATIC }</div>
+                  </div>
+                  <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
+                    <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
+                  </div>
+                </div>
+              ) : <></>
+            )
+          }
+          return result
+        })}        
       </div>
     </div>      
   </div>
