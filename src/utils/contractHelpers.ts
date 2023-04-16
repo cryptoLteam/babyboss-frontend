@@ -10,6 +10,7 @@ import {
   getRouterAddress,
   getMechaAddress,
   getMarketplaceAddress,
+  getUsdtAddress,
 } from 'utils/addressHelpers'
 
 // ABI
@@ -37,6 +38,10 @@ export const getMechaContract = (id: number, provider: any) => {
 
 export const getRewardContract = (id: number, provider: any) => {
   return getContractWithWeb3(reward, getRewardAddress(id), provider)
+}
+
+export const getUsdtContract = (id: number, provider: any) => {
+  return getContractWithWeb3(reward, getUsdtAddress(id), provider)
 }
 
 export const getStakingContract = (id: number, provider: any) => {

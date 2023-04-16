@@ -7,12 +7,14 @@ import { toast } from 'react-toastify';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL_MARKETPLACE, BACKEND_URL } from 'config/nfts';
 import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, GET_MARKET_ITEMS, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
-import { getMarketplaceContract } from 'utils/contractHelpers';
+import { getMarketplaceContract, getRewardContract, getUsdtContract } from 'utils/contractHelpers';
 import Moralis from "moralis";
 // import * from "@moralisweb3";
 import axios from 'axios';
 import { CHAIN } from 'config';
 import { ethers } from 'ethers';
+import { getMarketplaceAddress } from 'utils/addressHelpers';
+import { async } from 'q';
 // import Moralis from "moralis";
 // import { EvmChain } from "@moralisweb3/common-evm-utils";
 // import { forEach } from 'lodash';
@@ -125,7 +127,6 @@ const ownerWallet = '0x2db1f6eC280AECf2035567E862700f24D952573d'
 
 const Market = ({selectedChain}: {selectedChain: any}) => {
   const web3Context = useWeb3Context();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [marketItems, setMarketItems] = useState<any>([]);
   const [buyloadHistory, setbuyloadHistory] = useState<any>([]);
   const [tab, selectTab] = useState<string>('apparels')
@@ -143,13 +144,39 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       const buylists = await client.query<any>({ query: GET_BUY_HISTORIES })
 
       if(lists && lists.data.itemLists.length > 0) {
-        setMarketItems(lists.data.itemLists);
+        const _marketItems = lists.data.itemLists.map((item: any) => {
+          return {
+            id: item.id,
+            index: Number(item.index),
+            category: item.category,
+            title: item.title,
+            count: Number(item.count),
+            imgHash: item.imgHash,
+            priceForBBOSS: Number(ethers.utils.formatEther(item.priceForBBOSS)),
+            priceForUSD: Number(ethers.utils.formatUnits(item.priceForUSD, 6)),
+            createdAt: Number(item.createdAt),
+          }
+        })
+        setMarketItems(_marketItems);
       } else {
         setMarketItems([]);
       } 
       // console.log(lists);
       if(buylists && buylists.data.buyHistories.length > 0) {
-        setbuyloadHistory(buylists.data.buyHistories);
+        const _buyItems = buylists.data.buyHistories.map((item: any) => {
+          return {
+            id: item.id,
+            index: Number(item.index),
+            category: item.category,
+            title: item.title,
+            count: Number(item.count),
+            imgHash: item.imgHash,
+            priceForBBOSS: Number(ethers.utils.formatEther(item.priceForBBOSS)),
+            priceForUSD: Number(ethers.utils.formatUnits(item.priceForUSD, 6)),
+            createdAt: Number(item.createdAt),
+          }
+        })
+        setbuyloadHistory(_buyItems);
       } else {
         setbuyloadHistory([]);
       } 
@@ -159,52 +186,49 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     fetchItems();
   }, [selectedChain, tab, marketItems])
 
+  const [maticPrice, setMaticPrice] = useState(0)
+  useEffect(() => {
+    const fetchMaticPrice = async () => {
+      try {
+        const contract = getMarketplaceContract(1, web3Context?.provider);
+        const nativePrice = await contract.methods.getNativePrice().call()
+        setMaticPrice(Number(ethers.utils.formatEther(nativePrice)))
+        console.log("sniper: matic price: ", Number(ethers.utils.formatEther(nativePrice)))
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    if(!web3Context) fetchMaticPrice()
+  }, [web3Context])
+
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
   const [modalOpen3, setModalOpen3] = useState<any>(false)  
-  const [message, setMessage] = useState<string>("")  
   // buy product 
   const [selectedPriceType, setSelectedPriceType] = useState<string>("NONE");
   const [selectedEmail, setSelectedEmail] = useState<string>("");
   const [selectedCount, setSelectedCount] = useState<number>(0);
-  const [priceForBBOSS, setpriceForBBOSS] = useState<number>(0);
-  const [priceForMATIC, setpriceForMATIC] = useState<number>(0);
-  const [priceForUSD, setpriceForUSD] = useState<number>(0);
-  const [productId, setproductId] = useState<number>(0);
+  const [selectedItem, setSelectedItem] = useState<any>();
   // upload product
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [productTitle, setProductTitle] = useState<string>('');
   const [insertCount, setInsertCount] = useState<number>(0);
   const [priceBB, setPriceBB] = useState<number>(0);
-  const [priceMatic, setPriceMatic ] = useState<number>(0);
   const [priceUSD, setPriceUSD] = useState<number>(0);
-  const [ipfsHash, setIpfsHash] = useState<string>('');
-
-  const [productImage, setProductImage] = useState<string>("");  
-  const [categoryName, setCategoryName] = useState<string>("");
-  const [productName, setProductName] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<number>(0);
-  const [productPriceType, setProductPriceType] = useState<string>("");
-  const [productEmail, setProductEmail] = useState<string>("");
- 
+  
   // buy
   const handleBuyOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     console.log("handleBuyOptionChange");   
     const type = event.target.value;
-    // console.log(priceForBBOSS, priceForMATIC, priceForUSD);
     if (type === "BBOSS") {
-      setProductPrice(priceForBBOSS as unknown as number);
       setSelectedPriceType("BBOSS");   
     } else if (type === "NATIVE" ) {
-      setProductPrice(priceForMATIC as unknown as number);
       setSelectedPriceType("NATIVE");   
     } else if (type === "STABLE" ) {
       setSelectedPriceType("STABLE");   
-      setProductPrice(priceForUSD as unknown as number);
     } else if (type === "NONE" ){
       setSelectedPriceType("NONE");   
-      setProductPrice(0);
     }
  
     console.log(selectedPriceType);
@@ -218,14 +242,12 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     setSelectedEmail(event.target.value);
   }
   
-  const handleBuyPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProductPrice(event.target.value as unknown as number);
-  }
+  // const handleBuyPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setProductPrice(event.target.value as unknown as number);
+  // }
 
   const handleOpenBuyModal = (ind: number) => {
     let selInfo:any;
-
-    console.log("-------------");
     console.log(marketItems);
 
     marketItems.forEach((item:any) => {
@@ -234,12 +256,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       }
     });
 
-    setproductId(selInfo.index);
-    setCategoryName(selInfo.category);    
-    setProductName(selInfo.title);
-    setpriceForBBOSS(parseFloat(selInfo.priceForBBOSS));
-    setpriceForMATIC(parseFloat(selInfo.priceForMATIC));
-    setpriceForUSD(parseFloat(selInfo.priceForUSD));
+    setSelectedItem(selInfo);
     setModalOpen1(true);
   } 
 
@@ -248,24 +265,69 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       toast.error("Confirm your wallet connection!");
       return
     }
+		if(web3Context?.chainId !== CHAIN[1]) {
+		  toast.error("Confirm you are on Polygon Network!")
+		  return 
+		}
 
     const isValidEmail: boolean = emailRegex.test(selectedEmail);
 
     if (selectedCount === 0) {
+		  toast.error("Enter Count you would like to buy!")
+      return;
+    }
+
+    if (selectedCount > selectedItem.count) {
+		  toast.error("Exceeded Count!")
       return;
     }
 
     if (selectedPriceType === "NONE") {
+		  toast.error("Select payment method!")
       return;
     }
 
     if (!isValidEmail) {
+		  toast.error("Invalid Email!")
       return;
     }
+    
+    console.log("sniper: selected item: ", selectedItem, selectedPriceType)
+    if(selectedPriceType === "BBOSS") {
+      const bboss = getRewardContract(1, web3Context.provider)
+      const allowance = await bboss.methods.allowance(web3Context.account, getMarketplaceAddress(1)).call()
+      if(Number(ethers.utils.formatEther(allowance)) < selectedCount * selectedItem.priceForBBOSS) {
+        await bboss.methods.approve(getMarketplaceAddress(1), ethers.constants.MaxUint256).send({from: web3Context.account})
+      }
+      
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      console.log("sniper: buyItem: ", selectedItem, selectedCount, selectedPriceType, selectedEmail)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account});
+    }
+    if(selectedPriceType === "STABLE") {
+      const usdt = getUsdtContract(1, web3Context.provider)
+      const allowance = await usdt.methods.allowance(web3Context.account, getMarketplaceAddress(1)).call()
+      if(Number(ethers.utils.formatUnits(allowance, 6)) < selectedCount * selectedItem.priceForUSD) {
+        await usdt.methods.approve(getMarketplaceAddress(1), ethers.constants.MaxUint256).send({from: web3Context.account})
+      }
+      
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      console.log("sniper: buyItem: ", selectedItem, selectedCount, selectedPriceType, selectedEmail)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account});
+    }
 
-    const contract = getMarketplaceContract(1, web3Context?.provider);
-    await contract.methods.buyItem(productId, selectedCount,  categoryName, productName, selectedPriceType, selectedEmail).send({from: web3Context.account});
-
+    if(selectedPriceType === "NATIVE") {
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      const nativePrice = await contract.methods.getNativePrice().call()
+      console.log("sniper: buyItem: ", selectedItem, selectedCount, selectedPriceType, selectedEmail)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account, value: ethers.utils.parseEther((selectedItem.priceForUSD / nativePrice * selectedCount).toString())});
+    }
     setSelectedEmail("");
     setSelectedCount(0);
     setSelectedPriceType("NONE");
@@ -294,10 +356,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     setPriceBB(event.target.value as unknown as number);
   };
 
-  const handleAdminPriceMaticChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPriceMatic(event.target.value as unknown as number);
-  }
-
   const handleAdminPriceUSDChanage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPriceUSD(event.target.value as unknown as number);
   };
@@ -308,7 +366,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       return
     }
 		if(web3Context?.chainId !== CHAIN[1]) {
-		  toast.error("Confirm you are on Ethereum Network!")
+		  toast.error("Confirm you are on Polygon Network!")
 		  return 
 		}
 
@@ -317,7 +375,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     if (productTitle === '') { toast.error("Enter Title");return; }
     if (insertCount === 0) { toast.error("Enter Count");return; }
     if (priceBB === 0) { toast.error("Enter Price for BBOSS");return; }
-    if (priceMatic === 0) { toast.error("Enter Price for MATIC");return; }
     if (priceUSD === 0) { toast.error("enter Price for USD");return; }
 
     if (selectedFile) {
@@ -337,19 +394,15 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         console.log(hashImg);
 
       const contract = getMarketplaceContract(1, web3Context?.provider);
-      await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
+      await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, 
+          ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseUnits(priceUSD.toString(), 6)).send({from: web3Context.account});    
     }
-
-    const contract = getMarketplaceContract(1, web3Context?.provider);
-    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, 
-        ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseEther(priceMatic.toString()), ethers.utils.parseEther(priceUSD.toString())).send({from: web3Context.account});
 
     setSelectedFile(null);
     setSelectedOption('');
     setProductTitle('');
     setInsertCount(0);
     setPriceBB(0);
-    setPriceMatic(0);
     setPriceUSD(0);
 
     setModalOpen2(false);
@@ -386,14 +439,14 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 					</div>
 					<div className='items-center justify-center w-full pt-1 pb-1'>
             <div className='flex mt-2'>
-              <img src='{ productImage }' />
+              <img src='{ productImage }' alt=''/>
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
                 <label className=' text-black mt-2 float-right '>Category : </label>
               </div>
               <div className=' w-28 mb-2 mr-2'>
-                <label className=' text-black mt-2 float-left '>{ categoryName }</label>
+                <label className=' text-black mt-2 float-left '>{ selectedItem ? selectedItem?.category : "" }</label>
               </div>
             </div>
             <div className='flex mt-2'>
@@ -401,7 +454,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
                 <label className=' text-black mt-2 float-right '>Name : </label>
               </div>
               <div className=' w-28 mb-2 mr-2'>
-                <label className=' text-black mt-2 float-left '>{ productName }</label>
+                <label className=' text-black mt-2 float-left '>{ selectedItem? selectedItem.title : "" }</label>
               </div>
             </div>
             <div className='flex mt-2'>
@@ -490,7 +543,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
               <div className=' w-28 mb-2 mr-2'>
                 <label className=' text-black mt-2 float-right '>Price(MATIC) : </label>
               </div>
-              <InputVal type='number' value={ priceMatic } onChange={ handleAdminPriceMaticChange } autoFocus />
+              <InputVal type='number' value={  (priceUSD / maticPrice).toFixed(4) } disabled />
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
@@ -607,44 +660,45 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
       <div className="grid lg:grid-cols-3 grid-cols-1">
         {marketItems?.map((item:Histories, index:number) => {
-          console.log("sniper: count: ", item.count)
-          let result = []
-          for(let i = 0; i < item.count; i++) {
-            result.push(          
-              (item.category === tab) ? (
-                <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
-                  <div className='bg-red-500 rounded-3xl'>
-                    <img src='images/image-layer2.png' alt=''/>
-                  </div>
-                  <div className='pt-1 lg:text-1xl'>
-                    {`${item.title} #${i}`}
-                  </div>
-                  <div className='flex align-center justify-between mt-2'>
-                    <div className=' lg:text-md text-sm'>
-                      Price(BBOSS)
-                    </div>
-                    <div style={{ color: '#ff06f5' }}>{ item.priceForBBOSS }</div>
-                  </div>
-                  <div className='flex align-center justify-between'>
-                    <div className=' lg:text-md text-sm'>
-                      Price(USDT)
-                    </div>
-                    <div style={{ color: '#ff06f5' }}>{ item.priceForUSD }</div>
-                  </div>
-                  <div className='flex align-center justify-between'>
-                    <div className=' lg:text-md text-sm'>
-                      Price(MATIC)
-                    </div>
-                    <div style={{ color: '#ff06f5' }}>{ item.priceForMATIC }</div>
-                  </div>
-                  <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
-                    <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
-                  </div>
+          return (          
+            (item.category === tab) ? (
+              <div key={index} className=' mx-5 my-5 cursor-pointer'>
+                <div className='bg-red-500 rounded-3xl'>
+                  <img src='images/image-layer2.png' alt=''/>
                 </div>
-              ) : <></>
-            )
-          }
-          return result
+                <div className='pt-1 lg:text-1xl'>
+                  {`${item.title}`}
+                </div>
+                <div className='flex align-center justify-between mt-2'>
+                  <div className=' lg:text-md text-sm'>
+                    Remain Count
+                  </div>
+                  <div style={{ color: '#ff06f5' }}>{ item.count }</div>
+                </div>
+                <div className='flex align-center justify-between mt-2'>
+                  <div className=' lg:text-md text-sm'>
+                    Price(BBOSS)
+                  </div>
+                  <div style={{ color: '#ff06f5' }}>{ (item.priceForBBOSS).toFixed(4) }</div>
+                </div>
+                <div className='flex align-center justify-between'>
+                  <div className=' lg:text-md text-sm'>
+                    Price(USDT)
+                  </div>
+                  <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD).toFixed(4) }</div>
+                </div>
+                <div className='flex align-center justify-between'>
+                  <div className=' lg:text-md text-sm'>
+                    Price(MATIC)
+                  </div>
+                  <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD / maticPrice).toFixed(4) }</div>
+                </div>
+                <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
+                  <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
+                </div>
+              </div>
+            ) : <></>
+          )
         })}        
       </div>
     </div>      
