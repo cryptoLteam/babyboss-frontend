@@ -9,6 +9,7 @@ import { GRAPH_API_URL_MARKETPLACE } from 'config/nfts';
 import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
 import { getMarketplaceContract } from 'utils/contractHelpers';
 import { CHAIN } from 'config';
+import { ethers } from 'ethers';
 // import Moralis from "moralis";
 // import { EvmChain } from "@moralisweb3/common-evm-utils";
 // import { forEach } from 'lodash';
@@ -124,8 +125,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploadHistory, setUploadHistory] = useState<any>([]);
   const [buyloadHistory, setbuyloadHistory] = useState<any>([]);
-  const [buyhistory, setBuyHistory] = useState<any>([]);
-  const [selIndex, setSelIndex] = useState<number>(0)
   const [tab, selectTab] = useState<string>('apparels')
 
   useEffect(() => {
@@ -161,7 +160,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
     selectedChain(1);
 
-  }, [selectedChain])
+  }, [selectedChain, web3Context?.account])
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
@@ -324,7 +323,8 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     ///////// ************* ////////////////////
 
     const contract = getMarketplaceContract(1, web3Context?.provider);
-    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
+    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, 
+        ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseEther(priceMatic.toString()), ethers.utils.parseEther(priceUSD.toString())).send({from: web3Context.account});
 
     setModalOpen2(false);
   }
@@ -579,25 +579,47 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       </div>
     </div>
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
-      <div className="flex grid lg:grid-cols-4 grid-cols-1">
-        {uploadHistory?.map((item:Histories, index:number) => (          
-          (item.category === tab) ? (
-            <div key={index} className=' mx-5 my-5 cursor-pointer'>
-              <div className='bg-red-500 rounded-3xl'>
-                <img src='images/image-layer2.png' />
-              </div>
-              <div className=' text-center pt-1 lg:text-1xl'>
-                { item.title }
-              </div>
-              <div className=' text-center pt-2 lg:text-2xl text-sm' style={{ color: '#ff06f5' }}>
-                { item.priceForBBOSS } BBOSS
-              </div>
-              <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
-                <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
-              </div>
-            </div>
-          ) : ''
-        ))}        
+      <div className="grid lg:grid-cols-3 grid-cols-1">
+        {uploadHistory?.map((item:Histories, index:number) => {
+          console.log("sniper: count: ", item.count)
+          let result = []
+          for(let i = 0; i < item.count; i++) {
+            result.push(          
+              (item.category === tab) ? (
+                <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
+                  <div className='bg-red-500 rounded-3xl'>
+                    <img src='images/image-layer2.png' alt=''/>
+                  </div>
+                  <div className='pt-1 lg:text-1xl'>
+                    {`${item.title} #${i}`}
+                  </div>
+                  <div className='flex align-center justify-between mt-2'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(BBOSS)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForBBOSS }</div>
+                  </div>
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(USDT)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForUSD }</div>
+                  </div>
+                  <div className='flex align-center justify-between'>
+                    <div className=' lg:text-md text-sm'>
+                      Price(MATIC)
+                    </div>
+                    <div style={{ color: '#ff06f5' }}>{ item.priceForMATIC }</div>
+                  </div>
+                  <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
+                    <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
+                  </div>
+                </div>
+              ) : <></>
+            )
+          }
+          return result
+        })}        
       </div>
     </div>      
   </div>

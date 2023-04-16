@@ -15,7 +15,7 @@ export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 // export const GRAPH_API_URL = 'https://api.studio.thegraph.com/query//nftlamboclub/'
 // export const GRAPH_API_URL = 'https://api.studio.thegraph.com/query/34591/nftlamboclub/v0.0.8'
 export const GRAPH_API_URL = 'https://api.studio.thegraph.com/query/39184/babyboss/v0.0.1'
-export const GRAPH_API_URL_MARKETPLACE = 'https://api.thegraph.com/subgraphs/name/asinoe/babysubgraph'
+export const GRAPH_API_URL_MARKETPLACE = 'https://api.thegraph.com/subgraphs/name/seniorblockchaindev/babyboss_marketplace_1'
 export const IPFS_URL = 'https://lambonft.mypinata.cloud/ipfs/'
 export const IPFS_HASHS = [
   'QmUPvcuj9vRrbBLEyCFDkzVqQirJ76JoRzcbMgNy2MtHvd',
