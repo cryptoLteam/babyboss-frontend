@@ -142,23 +142,22 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       const lists = await client.query<any>({ query: GET_HISTORIES });
       const buylists = await client.query<any>({ query: GET_BUY_HISTORIES })
 
-      if(lists && lists.data.listHistories.length > 0) {
-        setUploadHistory(lists.data.listHistories);
-      } else {
-        setUploadHistory([]);
-      } 
-      // console.log(lists);
-      if(buylists && buylists.data.buyHistories.length > 0) {
-        setbuyloadHistory(buylists.data.buyHistories);
-      } else {
-        setbuyloadHistory([]);
-      } 
+      console.log("lists.data.listHistories");
+      console.log(lists.data.listHistories);
 
+      if(lists && lists.data.listHistories.length > 0)
+        setUploadHistory(lists.data.listHistories);
+      else 
+        setUploadHistory([]);
+
+      if(buylists && buylists.data.buyHistories.length > 0)
+        setbuyloadHistory(buylists.data.buyHistories);
+      else
+        setbuyloadHistory([]);
 		}
     
-		if (web3Context?.account) {
+		if (web3Context?.account)
       fetchItems(web3Context.account);
-		}
   }, [selectedChain, tab, uploadHistory])
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
@@ -237,6 +236,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     });
 
     setproductId(selInfo.index);
+    setProductImage(selInfo.imgHash);
     setCategoryName(selInfo.category);    
     setProductName(selInfo.title);
     setpriceForBBOSS(parseFloat(selInfo.priceForBBOSS));
@@ -314,7 +314,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 		  return 
 		}
 
-    // if (selectedFile === null) { toast.error("Select Category"); return; }
+    if (selectedFile === null) { toast.error("Select File"); return; }
     if (selectedOption === '') { toast.error("Select Category"); return; }
     if (productTitle === '') { toast.error("Enter Title");return; }
     if (insertCount === 0) { toast.error("Enter Count");return; }
@@ -340,6 +340,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 
       const contract = getMarketplaceContract(1, web3Context?.provider);
       await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
+      setModalOpen2(false);
     }
 
     const contract = getMarketplaceContract(1, web3Context?.provider);
@@ -388,7 +389,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 					</div>
 					<div className='items-center justify-center w-full pt-1 pb-1'>
             <div className='flex mt-2'>
-              <img src='{ productImage }' />
+              <img src={ `${ BACKEND_URL }/uploads${productImage}` } style={{ width: '300px', margin: 'auto' }}  />
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
@@ -609,14 +610,15 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
       <div className="grid lg:grid-cols-3 grid-cols-1">
         {uploadHistory?.map((item:Histories, index:number) => {
-          console.log("sniper: count: ", item.count)
+          // console.log("sniper: count: ", item.count)
           let result = []
+          let imageUrl = BACKEND_URL + '/uploads' + item.imgHash;
           for(let i = 0; i < item.count; i++) {
             result.push(          
               (item.category === tab) ? (
                 <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
                   <div className='bg-red-500 rounded-3xl'>
-                    <img src='images/image-layer2.png' alt=''/>
+                    <img src={ `${ imageUrl }` } alt=''/>
                   </div>
                   <div className='pt-1 lg:text-1xl'>
                     {`${item.title} #${i}`}
