@@ -5,9 +5,9 @@ import { useWeb3Context } from 'hooks/useWeb3Context'
 const StyledConnectButton = styled.button`
   background-color: #ff06f5;
   color: #FFFFFF;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-radius: 15px;  
+  padding: 0px 10px 0px 10px;
+  border-radius: 15px;
+  min-height: 30px;  
 `
 
 const WalletConnectButton = () => {
@@ -15,15 +15,15 @@ const WalletConnectButton = () => {
   const displayAddress =  `${web3Context?.account.substring(0, 5)}...${web3Context?.account.substring(web3Context?.account.length - 3)}`
   
   return (
-    <div className='font3'>
+    <div className=''>
       { web3Context?.account ?
-        <StyledConnectButton  className='lg:pt-2 pt-0'  onClick={web3Context?.disconnect}>
+        <StyledConnectButton  className=' '  onClick={web3Context?.disconnect}>
           Disconnect
           <br/>
           {displayAddress}
         </StyledConnectButton>
         :
-        <StyledConnectButton className='lg:py-2 mt-1' onClick={web3Context?.connectWallet}>Connect</StyledConnectButton>
+        <StyledConnectButton className='mt-1 lg:mt-2' onClick={web3Context?.connectWallet}>Connect</StyledConnectButton>
       }
     </div>
   )

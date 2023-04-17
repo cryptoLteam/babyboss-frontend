@@ -307,11 +307,12 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
   const handleAdminSubmit = async() => {
     if(!web3Context?.account) {
       toast.error("Confirm your wallet connection!");
-      return
+      return;
     }
+
 		if(web3Context?.chainId !== CHAIN[1]) {
-		  toast.error("Confirm you are on Ethereum Network!")
-		  return 
+		  toast.error("Confirm you are on Ethereum Network!");
+		  return;
 		}
 
     if (selectedFile === null) { toast.error("Select File"); return; }
