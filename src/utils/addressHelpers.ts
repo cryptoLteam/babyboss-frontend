@@ -25,7 +25,7 @@ export const getRewardAddress = (id: number) => {
   return getAddress(id, addresses.reward)
 }
 export const getUsdtAddress = (id: number) => {
-  return getAddress(id, addresses.reward)
+  return getAddress(id, addresses.usdt)
 }
 export const getMulticallAddress1 = (id: number) => {
   return getAddress(id, addresses.multicall1)

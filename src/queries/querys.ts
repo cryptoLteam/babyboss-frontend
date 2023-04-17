@@ -88,14 +88,17 @@ export interface BuyHistoriesData {
 export const GET_BUY_HISTORIES = gql`
 	query GetBuyHistories {
 		buyHistories {
-			id
-			index
-			count
+			title
 			payMethod
 			paidAmount
+			index
+			id
 			email
 			createdAt
-		}
+			count
+			category
+			buyer
+		  }
 	}
 `
 // category

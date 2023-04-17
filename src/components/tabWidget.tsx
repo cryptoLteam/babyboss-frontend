@@ -176,7 +176,8 @@ function TabWidget({ nftlists }: Props) {
               <NftItem 
                 key={index} 
                 id={ item['tokenId'] } 
-                imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
+                imgSrc="/images/imgs/stake/nfts/nft1.png" 
+                // imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
                 amount="200" owner={ '' } staked={ item['stake'] } 
                 handleItemClick={ handleItemClick }
                 handleItem={handleItem}
@@ -190,7 +191,8 @@ function TabWidget({ nftlists }: Props) {
               <NftItem 
                 key={index} 
                 id={ item['tokenId'] } 
-                imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
+                imgSrc="/images/imgs/stake/nfts/nft1.png" 
+                // imgSrc={`${NFT_IPFS}${item.tokenId}.jpg`}
                 amount="200" owner={ '' } 
                 staked={ item['stake'] }
                 handleItemClick={ handleItemClick }
