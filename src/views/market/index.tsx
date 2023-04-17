@@ -371,13 +371,8 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     }
 
 		if(web3Context?.chainId !== CHAIN[1]) {
-<<<<<<< HEAD
-		  toast.error("Confirm you are on Ethereum Network!");
-		  return;
-=======
 		  toast.error("Confirm you are on Polygon Network!")
 		  return 
->>>>>>> 299e0503e8ec64a08e240183ce539ee708964e89
 		}
 
     if (selectedFile === null) { toast.error("Select File"); return; }
