@@ -6,13 +6,15 @@ import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { GRAPH_API_URL_MARKETPLACE, BACKEND_URL } from 'config/nfts';
-import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, HistoriesData, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
-import { getMarketplaceContract } from 'utils/contractHelpers';
+import { GET_NFTS, GetNftsData, Nft, GET_HISTORIES, GET_MARKET_ITEMS, Histories, GET_BUY_HISTORIES, BuyHistoriesData, BuyHistories } from 'queries/querys';
+import { getMarketplaceContract, getRewardContract, getUsdtContract } from 'utils/contractHelpers';
 import Moralis from "moralis";
 // import * from "@moralisweb3";
-import axios, {isCancel, AxiosError} from 'axios';
+import axios from 'axios';
 import { CHAIN } from 'config';
 import { ethers } from 'ethers';
+import { getMarketplaceAddress } from 'utils/addressHelpers';
+import { async } from 'q';
 // import Moralis from "moralis";
 // import { EvmChain } from "@moralisweb3/common-evm-utils";
 // import { forEach } from 'lodash';
@@ -125,87 +127,110 @@ const ownerWallet = '0x2db1f6eC280AECf2035567E862700f24D952573d'
 
 const Market = ({selectedChain}: {selectedChain: any}) => {
   const web3Context = useWeb3Context();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploadHistory, setUploadHistory] = useState<any>([]);
+  const [marketItems, setMarketItems] = useState<any>([]);
   const [buyloadHistory, setbuyloadHistory] = useState<any>([]);
   const [tab, selectTab] = useState<string>('apparels')
   
   useEffect(() => {
     selectedChain(1);
 
-    const fetchItems =async (account:string) => {
+    const fetchItems =async () => {
 			const client = new ApolloClient({
         uri: GRAPH_API_URL_MARKETPLACE,
         cache: new InMemoryCache(),
       });
 
-      const lists = await client.query<any>({ query: GET_HISTORIES });
+      const lists = await client.query<any>({ query: GET_MARKET_ITEMS });
       const buylists = await client.query<any>({ query: GET_BUY_HISTORIES })
 
-      console.log("lists.data.listHistories");
-      console.log(lists.data.listHistories);
-
-      if(lists && lists.data.listHistories.length > 0)
-        setUploadHistory(lists.data.listHistories);
-      else 
-        setUploadHistory([]);
-
-      if(buylists && buylists.data.buyHistories.length > 0)
-        setbuyloadHistory(buylists.data.buyHistories);
-      else
+      console.log("sniper: fetch item success", lists)
+      if(lists && lists.data.itemLists.length > 0) {
+        const _marketItems = lists.data.itemLists.map((item: any) => {
+          return {
+            id: item.id,
+            index: Number(item.index),
+            category: item.category,
+            title: item.title,
+            count: Number(item.count),
+            imgHash: item.imgHash,
+            priceForBBOSS: Number(ethers.utils.formatEther(item.priceForBBOSS)),
+            priceForUSD: Number(ethers.utils.formatUnits(item.priceForUSD, 6)),
+            createdAt: Number(item.createdAt),
+          }
+        })
+        setMarketItems(_marketItems);
+      } else {
+        setMarketItems([]);
+      } 
+      // console.log(lists);
+      if(buylists && buylists.data.buyHistories.length > 0) {
+        const _buyItems = buylists.data.buyHistories.map((item: any) => {
+          return {
+            title: item.title,
+            payMethod: item.payMethod,
+            paidAmount: Number(ethers.utils.formatEther(item.paidAmount)),
+            index: Number(item.index),
+            id: item.id,
+            email: item.email,
+            createdAt: Number(item.createdAt),
+            count: Number(item.count),
+            category: item.category,
+            buyer: item.buyer
+          }
+        })
+        setbuyloadHistory(_buyItems);
+      } else {
         setbuyloadHistory([]);
+      } 
 		}
     
-		if (web3Context?.account)
-      fetchItems(web3Context.account);
-  }, [selectedChain, tab, uploadHistory])
+    fetchItems();
+  }, [selectedChain])
+
+  const [maticPrice, setMaticPrice] = useState(0)
+  useEffect(() => {
+    const fetchMaticPrice = async () => {
+      try {
+        const contract = getMarketplaceContract(1, web3Context?.provider);
+        const nativePrice = await contract.methods.getNativePrice().call()
+        setMaticPrice(Number(ethers.utils.formatEther(nativePrice)))
+        console.log("sniper: matic price: ", Number(ethers.utils.formatEther(nativePrice)))
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    if(web3Context) fetchMaticPrice()
+  }, [web3Context])
 
   const [modalOpen1, setModalOpen1] = useState<any>(false)  
   const [modalOpen2, setModalOpen2] = useState<any>(false)  
   const [modalOpen3, setModalOpen3] = useState<any>(false)  
-  const [message, setMessage] = useState<string>("")  
   // buy product 
   const [selectedPriceType, setSelectedPriceType] = useState<string>("NONE");
   const [selectedEmail, setSelectedEmail] = useState<string>("");
   const [selectedCount, setSelectedCount] = useState<number>(0);
-  const [priceForBBOSS, setpriceForBBOSS] = useState<number>(0);
-  const [priceForMATIC, setpriceForMATIC] = useState<number>(0);
-  const [priceForUSD, setpriceForUSD] = useState<number>(0);
-  const [productId, setproductId] = useState<number>(0);
+  const [selectedItem, setSelectedItem] = useState<any>();
   // upload product
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [productTitle, setProductTitle] = useState<string>('');
   const [insertCount, setInsertCount] = useState<number>(0);
   const [priceBB, setPriceBB] = useState<number>(0);
-  const [priceMatic, setPriceMatic ] = useState<number>(0);
   const [priceUSD, setPriceUSD] = useState<number>(0);
-  const [ipfsHash, setIpfsHash] = useState<string>('');
-
-  const [productImage, setProductImage] = useState<string>("");  
-  const [categoryName, setCategoryName] = useState<string>("");
-  const [productName, setProductName] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<number>(0);
-  const [productPriceType, setProductPriceType] = useState<string>("");
-  const [productEmail, setProductEmail] = useState<string>("");
- 
+  const [productImage, setProductImage] = useState<string>("");
+  
   // buy
   const handleBuyOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     console.log("handleBuyOptionChange");   
     const type = event.target.value;
-    // console.log(priceForBBOSS, priceForMATIC, priceForUSD);
     if (type === "BBOSS") {
-      setProductPrice(priceForBBOSS as unknown as number);
       setSelectedPriceType("BBOSS");   
     } else if (type === "NATIVE" ) {
-      setProductPrice(priceForMATIC as unknown as number);
       setSelectedPriceType("NATIVE");   
     } else if (type === "STABLE" ) {
       setSelectedPriceType("STABLE");   
-      setProductPrice(priceForUSD as unknown as number);
-    } else if (type === "NONE" ) {
-      setSelectedPriceType("NONE");
-      setProductPrice(0);
+    } else if (type === "NONE" ){
+      setSelectedPriceType("NONE");   
     }
  
     console.log(selectedPriceType);
@@ -219,29 +244,22 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     setSelectedEmail(event.target.value);
   }
   
-  const handleBuyPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProductPrice(event.target.value as unknown as number);
-  }
+  // const handleBuyPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setProductPrice(event.target.value as unknown as number);
+  // }
 
   const handleOpenBuyModal = (ind: number) => {
     let selInfo:any;
+    console.log(marketItems);
 
-    console.log("-------------");
-    console.log(uploadHistory);
-
-    uploadHistory.forEach((item:any) => {
+    marketItems.forEach((item:any) => {
       if (item.index === ind) {
         selInfo = item;
       }
     });
 
-    setproductId(selInfo.index);
+    setSelectedItem(selInfo);
     setProductImage(selInfo.imgHash);
-    setCategoryName(selInfo.category);    
-    setProductName(selInfo.title);
-    setpriceForBBOSS(parseFloat(selInfo.priceForBBOSS));
-    setpriceForMATIC(parseFloat(selInfo.priceForMATIC));
-    setpriceForUSD(parseFloat(selInfo.priceForUSD));
     setModalOpen1(true);
   } 
 
@@ -250,24 +268,70 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
       toast.error("Confirm your wallet connection!");
       return
     }
+		if(web3Context?.chainId !== CHAIN[1]) {
+		  toast.error("Confirm you are on Polygon Network!")
+		  return 
+		}
 
     const isValidEmail: boolean = emailRegex.test(selectedEmail);
 
     if (selectedCount === 0) {
+		  toast.error("Enter Count you would like to buy!")
+      return;
+    }
+
+    if (selectedCount > selectedItem.count) {
+		  toast.error("Exceeded Count!")
       return;
     }
 
     if (selectedPriceType === "NONE") {
+		  toast.error("Select payment method!")
       return;
     }
 
     if (!isValidEmail) {
+		  toast.error("Invalid Email!")
       return;
     }
+    
+    console.log("sniper: selected item: ", selectedItem, selectedPriceType)
+    if(selectedPriceType === "BBOSS") {
+      const bboss = getRewardContract(1, web3Context.provider)
+      const allowance = await bboss.methods.allowance(web3Context.account, getMarketplaceAddress(1)).call()
+      if(Number(ethers.utils.formatEther(allowance)) < selectedCount * selectedItem.priceForBBOSS) {
+        await bboss.methods.approve(getMarketplaceAddress(1), ethers.constants.MaxUint256).send({from: web3Context.account})
+      }
+      
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      console.log("sniper: buyItem: ", selectedItem, selectedCount, selectedPriceType, selectedEmail)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account});
+    }
+    if(selectedPriceType === "STABLE") {
+      const usdt = getUsdtContract(1, web3Context.provider)
+      const allowance = await usdt.methods.allowance(web3Context.account, getMarketplaceAddress(1)).call()
+      console.log("sniper: buyItem: ", allowance, selectedItem.priceForUSD)
+      if(Number(ethers.utils.formatUnits(allowance, 6)) < selectedCount * selectedItem.priceForUSD) {
+        await usdt.methods.approve(getMarketplaceAddress(1), ethers.constants.MaxUint256).send({from: web3Context.account})
+      }
+      
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      console.log("sniper: buyItem: ", selectedItem, selectedCount, selectedPriceType, selectedEmail)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account});
+    }
 
-    const contract = getMarketplaceContract(1, web3Context?.provider);
-    await contract.methods.buyItem(productId, selectedCount,  categoryName, productName, selectedPriceType, selectedEmail).send({from: web3Context.account});
-
+    if(selectedPriceType === "NATIVE") {
+      const contract = getMarketplaceContract(1, web3Context?.provider);
+      const nativePrice = Number(ethers.utils.formatEther(await contract.methods.getNativePrice().call()))
+      console.log("sniper: buyItem: ", selectedItem.priceForUSD,nativePrice,selectedCount)
+      await contract.methods.buyItem(selectedItem.index, selectedCount, selectedItem.category, 
+        selectedItem.title, selectedPriceType, selectedEmail)
+        .send({from: web3Context.account, value: ethers.utils.parseEther((selectedItem.priceForUSD / nativePrice * selectedCount + 0.1).toString())});
+    }
     setSelectedEmail("");
     setSelectedCount(0);
     setSelectedPriceType("NONE");
@@ -296,10 +360,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     setPriceBB(event.target.value as unknown as number);
   };
 
-  const handleAdminPriceMaticChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPriceMatic(event.target.value as unknown as number);
-  }
-
   const handleAdminPriceUSDChanage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPriceUSD(event.target.value as unknown as number);
   };
@@ -311,8 +371,13 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     }
 
 		if(web3Context?.chainId !== CHAIN[1]) {
+<<<<<<< HEAD
 		  toast.error("Confirm you are on Ethereum Network!");
 		  return;
+=======
+		  toast.error("Confirm you are on Polygon Network!")
+		  return 
+>>>>>>> 299e0503e8ec64a08e240183ce539ee708964e89
 		}
 
     if (selectedFile === null) { toast.error("Select File"); return; }
@@ -320,7 +385,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     if (productTitle === '') { toast.error("Enter Title");return; }
     if (insertCount === 0) { toast.error("Enter Count");return; }
     if (priceBB === 0) { toast.error("Enter Price for BBOSS");return; }
-    if (priceMatic === 0) { toast.error("Enter Price for MATIC");return; }
     if (priceUSD === 0) { toast.error("enter Price for USD");return; }
 
     if (selectedFile) {
@@ -340,20 +404,15 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         console.log(hashImg);
 
       const contract = getMarketplaceContract(1, web3Context?.provider);
-      await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, priceBB, priceMatic, priceUSD).send({from: web3Context.account});
-      setModalOpen2(false);
+      await contract.methods.listItem(selectedOption, productTitle, hashImg, insertCount, 
+          ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseUnits(priceUSD.toString(), 6)).send({from: web3Context.account});    
     }
-
-    const contract = getMarketplaceContract(1, web3Context?.provider);
-    await contract.methods.listItem(selectedOption, productTitle, "hashImg", insertCount, 
-        ethers.utils.parseEther(priceBB.toString()), ethers.utils.parseEther(priceMatic.toString()), ethers.utils.parseEther(priceUSD.toString())).send({from: web3Context.account});
 
     setSelectedFile(null);
     setSelectedOption('');
     setProductTitle('');
     setInsertCount(0);
     setPriceBB(0);
-    setPriceMatic(0);
     setPriceUSD(0);
 
     setModalOpen2(false);
@@ -397,7 +456,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
                 <label className=' text-black mt-2 float-right '>Category : </label>
               </div>
               <div className=' w-28 mb-2 mr-2'>
-                <label className=' text-black mt-2 float-left '>{ categoryName }</label>
+                <label className=' text-black mt-2 float-left '>{ selectedItem ? selectedItem?.category : "" }</label>
               </div>
             </div>
             <div className='flex mt-2'>
@@ -405,7 +464,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
                 <label className=' text-black mt-2 float-right '>Name : </label>
               </div>
               <div className=' w-28 mb-2 mr-2'>
-                <label className=' text-black mt-2 float-left '>{ productName }</label>
+                <label className=' text-black mt-2 float-left '>{ selectedItem? selectedItem.title : "" }</label>
               </div>
             </div>
             <div className='flex mt-2'>
@@ -494,7 +553,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
               <div className=' w-28 mb-2 mr-2'>
                 <label className=' text-black mt-2 float-right '>Price(MATIC) : </label>
               </div>
-              <InputVal type='number' value={ priceMatic } onChange={ handleAdminPriceMaticChange } autoFocus />
+              <InputVal type='number' value={  (priceUSD / maticPrice).toFixed(4) } disabled />
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
@@ -509,66 +568,39 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
         </div>
 			</GlobModal>
 
-      <GlobModal size="sm"   open={modalOpen3} setOpen={setModalOpen3} >
+      <GlobModal size="xl" open={modalOpen3} setOpen={setModalOpen3} >
         <div className='font-sans	'>
 					<div className=' w-full flex items-center justify-between px-3 py-2 border-b border-black'>
 						<h1 className=' text-xl text-black'>Buy History</h1> 
             <VscChromeClose onClick={() => setModalOpen3(false)} className=' w-5 h-5 cursor-pointer text-black ' />
 					</div>
-  				<div className='w-full flex items-center justify-between px-3 py-2 border-b border-black'>
-            <div style={{ overflow: "auto", margin:"auto", width:"600px" }} className=' list-table relative'  >
-              <div className='flex bg-white head'>
-                <div>Category</div>
-                <div>title</div>
-                <div>count</div>
-                <div>payMethod</div>
-                <div className='w-24'>email</div>
-              </div>
-              <div className=' h-28 main'>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-                <div className='flex'>
-                  <div>Category</div>
-                  <div>title</div>
-                  <div>count</div>
-                  <div>payMethod</div>
-                  <div>hellenistic00@gamil.com</div>
-                </div>
-              </div>
-            </div>
+  				<div className='w-full flex items-center justify-between px-3 py-2 border-b border-black text-center' style={{fontSize: '11px', borderCollapse: 'collapse'}}>
+            <table >
+              <thead>
+                <tr className=''>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>Date</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>Category</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>title</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>count</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>Payment Method</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>Paid Amount</th>
+                  <th style={{border: "1px solid gray", paddingLeft: "5px", paddingRight: "5px"}}>email</th>
+                </tr>
+              </thead>
+              <tbody className=''>
+                {buyloadHistory && buyloadHistory.map((item: any) => {
+                  return <tr className=''>
+                    <td style={{border: "1px solid gray"}}>{new Date(item.createdAt * 1000).toLocaleString()}</td>
+                    <td style={{border: "1px solid gray"}}>{item.category}</td>
+                    <td style={{border: "1px solid gray"}}>{item.title}</td>
+                    <td style={{border: "1px solid gray"}}>{item.count}</td>
+                    <td style={{border: "1px solid gray"}}>{item.payMethod}</td>
+                    <td style={{border: "1px solid gray"}}>{item.paidAmount}</td>
+                    <td style={{border: "1px solid gray"}}>{item.email}</td>
+                  </tr>
+                })}
+              </tbody>
+            </table>
           </div>
           <div className=' flex items-center justify-center py-3'>
             <button onClick={() => setModalOpen3(false)} className=' px-16 py-2 text-sm rounded-3xl text-black border-2 border-black'>OK</button>
@@ -584,7 +616,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
           <VscSettings />
         </div>
       </div>}
-      
       <div className='px-4 lg:px-32 py-4 lg:pt-20'>
         <div className="lg:flex lg:justify-between lg:flex-row">
           <div className='py-2 px-4 cursor-pointer rounded-t-md font3 text-4xl' >
@@ -610,19 +641,15 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
     </div>
     <div className='px-4 lg:px-32 py-4 lg:py-4 ' id="nft-lists">
       <div className="grid lg:grid-cols-3 grid-cols-1">
-        {uploadHistory?.map((item:Histories, index:number) => {
-          // console.log("sniper: count: ", item.count)
-          let result = []
-          let imageUrl = BACKEND_URL + '/uploads' + item.imgHash;
-          for(let i = 0; i < item.count; i++) {
-            result.push(          
+        {marketItems?.map((item:Histories, index:number) => {
+            return (          
               (item.category === tab) ? (
-                <div key={index * i + i} className=' mx-5 my-5 cursor-pointer'>
+                <div key={index} className=' mx-5 my-5 cursor-pointer'>
                   <div className='bg-red-500 rounded-3xl'>
-                    <img src={ `${ imageUrl }` } alt=''/>
+                    <img src='images/image-layer2.png' alt=''/>
                   </div>
                   <div className='pt-1 lg:text-1xl'>
-                    {`${item.title} #${i}`}
+                    {`${item.title}`}
                   </div>
                   <div className='flex align-center justify-between mt-2'>
                     <div className=' lg:text-md text-sm'>
@@ -640,7 +667,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
                     <div className=' lg:text-md text-sm'>
                       Price(MATIC)
                     </div>
-                    <div style={{ color: '#ff06f5' }}>{ item.priceForMATIC }</div>
+                    <div style={{ color: '#ff06f5' }}>{ (item.priceForUSD / maticPrice).toFixed(4) }</div>
                   </div>
                   <div className=' text-center pt-3 lg:text-2xl text-sm' style={{ color: '#ff06f5' }} onClick={ () =>handleOpenBuyModal(item.index) }>
                     <label className='cursor-pointer bg-blue-600 font3 text-white px-5 py-3 rounded-xl'>Buy</label>
@@ -648,8 +675,6 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
                 </div>
               ) : <></>
             )
-          }
-          return result
         })}        
       </div>
     </div>      

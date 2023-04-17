@@ -31,7 +31,6 @@ export interface Histories {
 	count: number;
 	imgHash: string;
 	priceForBBOSS: number;
-	priceForMATIC: number;
 	priceForUSD: number;
 	createdAt: number;
 }
@@ -39,6 +38,21 @@ export interface Histories {
 export interface HistoriesData {
 	items : Histories[];
 }  
+
+export const GET_MARKET_ITEMS = gql`
+	query GetMarketItems {
+		itemLists {
+			createdAt
+			count
+			category
+			imgHash
+			index
+			priceForBBOSS
+			priceForUSD
+			title
+		}
+	}
+`
  
 export const GET_HISTORIES = gql`
 	query GetHistories {
@@ -49,7 +63,6 @@ export const GET_HISTORIES = gql`
 			imgHash
 			index
 			priceForBBOSS
-			priceForMATIC
 			priceForUSD
 			title
 		  }
@@ -64,7 +77,6 @@ export interface BuyHistories {
 	count: number;
 	imgHash: string;
 	priceForBBOSS: number;
-	priceForMATIC: number;
 	priceForUSD: number;
 	createdAt: number;
 }
@@ -76,14 +88,17 @@ export interface BuyHistoriesData {
 export const GET_BUY_HISTORIES = gql`
 	query GetBuyHistories {
 		buyHistories {
-			id
-			index
-			count
+			title
 			payMethod
 			paidAmount
+			index
+			id
 			email
 			createdAt
-		}
+			count
+			category
+			buyer
+		  }
 	}
 `
 // category
