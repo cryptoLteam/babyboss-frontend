@@ -616,20 +616,20 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
               STORE
           </div>
           <div className='flex border-b-2 border-gray-600 w-full lg:justify-end justify-center'>
-            <div className='py-2 px-1 lg:px-20 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg ' onClick={() => selectTab('apparels') } >
+            <div className={`py-2 px-1 lg:px-5 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg hover:text-[#ff06f5] ${tab === "apparels"? "text-[#ff06f5]" : "text-[#6740b0]"}`} onClick={() => selectTab('apparels') } >
               apparels
             </div>
-            <div className='py-2 px-1 lg:px-20 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg' onClick={() => selectTab('plushies') } >
+            <div className={`py-2 px-1 lg:px-5 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg hover:text-[#ff06f5] ${tab === "plushies"? "text-[#ff06f5]" : "text-[#6740b0]"}`} onClick={() => selectTab('plushies') } >
               plushies
             </div>
-            <div className='py-2 px-1 lg:px-20 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg' onClick={() => selectTab('misc') } >
+            <div className={`py-2 px-1 lg:px-5 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg hover:text-[#ff06f5] ${tab === "misc"? "text-[#ff06f5]" : "text-[#6740b0]"}`} onClick={() => selectTab('misc') } >
               misc
             </div>
-            <div className='py-1 lg:py-2 px-1 lg:px-8 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg' >
+            {/* <div className='py-1 lg:py-2 px-1 lg:px-8 cursor-pointer rounded-md font3 lg:text-right text-sm lg:text-lg' >
               <button className='bg-black mb-1 text-white text-sm px-1 py-1 rounded-md float-right'>
                 CHECKOUT
               </button>
-            </div>            
+            </div>             */}
           </div>
       </div>
     </div>

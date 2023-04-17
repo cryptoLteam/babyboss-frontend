@@ -45,7 +45,7 @@ function NftItem({ id, imgSrc, amount, owner, staked, handleItemClick, handleIte
 				</div>
 			</div>
 		</div>
-		<div className='lg:mt-3 mx-5 p-2 text-center text-white rounded-full' style={{ backgroundColor: '#ab29bb' }} onClick={() => handleItem(id)}>
+		<div className='lg:mt-3 mx-5 p-2 text-center text-white rounded-full bg-[#ab29bb] hover:bg-[#ff000c]' onClick={() => handleItem(id)}>
 			{staked? "Unstake" : "Stake"}
 		</div>
 	</div>

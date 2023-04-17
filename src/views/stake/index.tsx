@@ -81,7 +81,7 @@ const Stake = () => {
 					<div className="lg:float-right lg:mr-32 p-8 lg:rounded-xl mt-5" style={{ backgroundColor: '#8c55bc' }}>
 						<div className=' text-3xl text-white pb-5 '>Current Earning:</div>
 						<div className=' text-4xl text-green-500 pb-5 '>{pendingReward}$ BBOSS</div>
-						<div className=' text-white text-center text-2xl p-3 rounded-xl cursor-pointer' style={{ backgroundColor: "#ff06f5" }} onClick={handleClaim}>CLAIM ALL</div>
+						<button className='w-full text-white text-center text-2xl p-3 rounded-xl cursor-pointer bg-[#ff06f5] hover:bg-[#ff000c]' onClick={handleClaim}>CLAIM ALL</button>
 					</div>
 				</div>
 			</div>

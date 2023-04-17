@@ -27,6 +27,18 @@ body {
   font-family: "04b30";
 } 
 
+.m-tab {
+  color: white;
+} 
+
+.m-tab:hover {
+  color: #ff06f5;
+} 
+
+.m-tab-active {
+  color: #ff06f5;
+} 
+
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -105,7 +117,7 @@ body {
 }
 
 .header-main .category {
-  @apply flex lg:right-40 text-white sm:justify-center pt-10 lg:mr-12;
+  @apply flex items-center lg:right-40 text-white sm:justify-center pt-10 lg:mr-12;
 }
 
 .header-main .category a {

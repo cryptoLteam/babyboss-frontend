@@ -141,13 +141,13 @@ function TabWidget({ nftlists }: Props) {
       {(() => {
         if (selectedTab === 0 && selectedNFTsonStaking.length > 0)
           return (
-            <div className='float-right cursor-pointer hover:text-red-400' onClick={ () => handleUnStakeItems(selectedNFTsonStaking) }>
+            <div className='float-right lg:mt-3 mx-5 p-2 cursor-pointer text-center text-white rounded-full bg-[#ab29bb] hover:bg-[#ff000c]' onClick={ () => handleUnStakeItems(selectedNFTsonStaking) }>
               UNSTAKE
             </div>
           )
         else if (selectedTab === 1 && selectedNFTsonWallet.length > 0)
           return (
-            <div className='float-right cursor-pointer hover:text-red-400' onClick={ () => handleStakeItems(selectedNFTsonWallet) }>
+            <div className='float-right lg:mt-3 mx-5 p-2 cursor-pointer text-center text-white rounded-full bg-[#ab29bb] hover:bg-[#ff000c]' onClick={ () => handleStakeItems(selectedNFTsonWallet) }>
               STAKE
             </div>
           ) 
