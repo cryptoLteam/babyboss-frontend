@@ -444,7 +444,7 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
 					</div>
 					<div className='items-center justify-center w-full pt-1 pb-1'>
             <div className='flex mt-2'>
-              <img src={ `${ BACKEND_URL }/uploads${productImage}` } style={{ width: '300px', margin: 'auto' }}  />
+              <img src={ `${ BACKEND_URL }/uploads${productImage}` } className=' lg:w-48 lg:h-48 w-full m-auto ' />
             </div>
             <div className='flex mt-2'>
               <div className=' w-28 mb-2 mr-2'>
@@ -640,8 +640,8 @@ const Market = ({selectedChain}: {selectedChain: any}) => {
             return (          
               (item.category === tab) ? (
                 <div key={index} className=' mx-5 my-5 cursor-pointer'>
-                  <div className='bg-red-500 rounded-3xl'>
-                    <img src='images/image-layer2.png' alt=''/>
+                  <div className='rounded-3xl'>
+                    <img src={ `${BACKEND_URL}/uploads${item.imgHash}` } className=' lg:w-48 lg:h-48 w-full m-auto' alt=''/>
                   </div>
                   <div className='pt-1 lg:text-1xl'>
                     {`${item.title}`}
